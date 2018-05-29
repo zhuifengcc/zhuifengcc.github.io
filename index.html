@@ -229,7 +229,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/05/24/Spring Cloud 学习笔记（一）/">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/05/24/微服务架构及Spring Cloud基础/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="zhuifengcc">
@@ -248,7 +248,7 @@
         
           <h1 class="post-title" itemprop="name headline">
                 
-                <a class="post-title-link" href="/2018/05/24/Spring Cloud 学习笔记（一）/" itemprop="url">Spring Cloud 学习笔记（一）</a></h1>
+                <a class="post-title-link" href="/2018/05/24/微服务架构及Spring Cloud基础/" itemprop="url">微服务架构及Spring Cloud</a></h1>
         
 
         <div class="post-meta">
@@ -300,7 +300,7 @@
       
         
           
-            <h1 id="一、微服务架构及Spring-Cloud基础"><a href="#一、微服务架构及Spring-Cloud基础" class="headerlink" title="一、微服务架构及Spring Cloud基础"></a>一、微服务架构及Spring Cloud基础</h1><h2 id="什么是微服务架构？"><a href="#什么是微服务架构？" class="headerlink" title="什么是微服务架构？"></a>什么是微服务架构？</h2><p>简单来说，微服务是系统架构上的一种设计风格，它的主旨是将一个原本独立的系统拆分成多个小型服务，这些小型服务都在各自独立的进程中运行，服务之间通过基于HTTP的RESTful API进行通信协作。被拆分成的每一个小型服务都围绕着系统中的某一项或一些耦合度较高的业务功能进行构建，并且每个服务都维护着自身的数据存储、业务开发、自动化测试案例以及独立部署机制。由于有了轻量级的通信协作基础，所有这些微服务可以使用不同的语言来编写。</p>
+            <h2 id="什么是微服务架构？"><a href="#什么是微服务架构？" class="headerlink" title="什么是微服务架构？"></a>什么是微服务架构？</h2><p>简单来说，微服务是系统架构上的一种设计风格，它的主旨是将一个原本独立的系统拆分成多个小型服务，这些小型服务都在各自独立的进程中运行，服务之间通过基于HTTP的RESTful API进行通信协作。被拆分成的每一个小型服务都围绕着系统中的某一项或一些耦合度较高的业务功能进行构建，并且每个服务都维护着自身的数据存储、业务开发、自动化测试案例以及独立部署机制。由于有了轻量级的通信协作基础，所有这些微服务可以使用不同的语言来编写。</p>
 <p>微服务架构强调业务系统需要彻底的组件化和服务化。如果用一句话来谈SOA和微服务的区别，即微服务不在强调传统SOA架构里面比较重的ESB企业服务总线，同时SOA的思想进入到单个业务系统内部实现真正的组件化。</p>
 <p>单体系统：部署在一个进程里，修改一个小功能会影响其他功能，无法评估各个模块系统资源的使用。<br>微服务系统：服务可以独立部署和扩展，松耦合，每个服务的更新不会影响其他服务的运行，可以准确对服务进行性能容量评估。</p>
 <p>单体系统中的代码依赖（进程内的方法调用）变成了服务间的通信依赖。但是微服务架构也存在很多需要去考虑的因素如网络延迟、分布式事务、异步消息等。</p>
