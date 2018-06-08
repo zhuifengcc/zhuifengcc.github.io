@@ -6,7 +6,7 @@ tags:
 ## 一、发展历程
 ### 1.单机关系型数据库
 APP - DAL - MySQL Instance（APP - Action - Service - DAO - MySQL Instance）
-
+<!--![单机结构图](../../resource/images/1.png)-->
 数据存储的瓶颈：
 
     1、数据量的总大小，一个机器放不下
