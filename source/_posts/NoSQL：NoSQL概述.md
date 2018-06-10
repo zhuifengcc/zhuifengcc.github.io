@@ -6,7 +6,7 @@ tags:
 ## 一、发展历程
 ### 1.单机关系型数据库
 APP - DAL - MySQL Instance（APP - Action - Service - DAO - MySQL Instance）
-<!--![单机结构图](../../resource/images/1.png)-->
+![单机结构图](https://raw.githubusercontent.com/wiki/zhuifengcc/zhuifengcc.github.io/images/NoSQL/summary/1.1.png)
 数据存储的瓶颈：
 
     1、数据量的总大小，一个机器放不下
@@ -14,11 +14,14 @@ APP - DAL - MySQL Instance（APP - Action - Service - DAO - MySQL Instance）
     3、访问量（读写混合），一个实例不能承受（后续主从复制，读写分离的诞生）
 ### 2.Memcache（缓存）+ MySQL + 垂直拆分
 APP - DAL - Cache - MySQL Instances（Instance1：business 1、Instance2：business 2、Instance3：userinfo...）
+![缓存+垂直拆分](https://raw.githubusercontent.com/wiki/zhuifengcc/zhuifengcc.github.io/images/NoSQL/summary/1.2.png)
 数据库垂直拆分
 ### 3.MySQL主从复制、读写分离
+![主从复制](https://raw.githubusercontent.com/wiki/zhuifengcc/zhuifengcc.github.io/images/NoSQL/summary/1.3.png)
 主从复制（master/slave）：在主库插入时，从库迅速插入，容灾备份
 读写分离：读写分别在不同的数据库，写操作在主库进行，读操作在从库进行
 ### 4.分库分表 + 水平拆分 + MySQL集群（Cluster）
+![分库分表+集群](https://raw.githubusercontent.com/wiki/zhuifengcc/zhuifengcc.github.io/images/NoSQL/summary/1.4.png)
 主库写压力出现瓶颈，MySQL数据引擎MyIASM使用表锁（锁整张表），InnoDB使用行锁（锁单行数据，并发性高），MySQL应用开始使用InnoDB。
 
 分库分表：紧耦合的业务相关数据放在一个库，变化小冷热门的数据放在一个库。数据量大，分表存储。
