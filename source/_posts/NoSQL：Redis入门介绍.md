@@ -5,7 +5,7 @@ tags:
 ---
 ## 一、Redis入门概述
 ### 1.Redis是什么
-Redis：REmote DIctionary Server（远程字典服务器），是一个高性能的（key/value）分布式内存数据库，基于内存运行，并支持持久化的NOSQL数据库，也被人们成为数据结构数据库。
+Redis：REmote DIctionary Server（远程字典服务器），是一个高性能的（key/value）分布式内存数据库，基于内存运行，并支持持久化的NOSQL数据库，也被人们称为数据结构数据库。
 
     Redis支持数据的持久化，可以将内存中的数据保持在磁盘中，重启的时候可以再次加载进行使用
     Redis不仅仅支持简单的key-value类型的数据，同时还提供list，set，zset（sorted set），hash等数据结构的存储
@@ -51,7 +51,7 @@ Redis：REmote DIctionary Server（远程字典服务器），是一个高性能
     HWADDR=00:0c:29:22:05:4c
     IPV6INIT=no
     USERCTL=no  
-在netwotk-scripts文件夹下，如果并没有所说的ifcfg-eth0这个文件，而是ifcfg-ens33还有ifcfg-lo, 通过vi命令编辑ens33这个文件，最后把文件改名就ok了,必须有ifcfg-eth0这个配置文件
+在netwotk-scripts文件夹下，如果并没有所说的ifcfg-eth0这个文件，而是ifcfg-ens33还有ifcfg-lo, 通过vi命令编辑ens33这个文件，最后把文件改名就ok了, 必须有ifcfg-eth0这个配置文件
 ![网络配置目录](https://raw.githubusercontent.com/wiki/zhuifengcc/zhuifengcc.github.io/images/NoSQL/redis_1/2-8.png)
 
 ![网络配置](https://raw.githubusercontent.com/wiki/zhuifengcc/zhuifengcc.github.io/images/NoSQL/redis_1/2-9.png)
