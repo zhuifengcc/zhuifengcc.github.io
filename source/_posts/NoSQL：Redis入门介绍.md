@@ -1,5 +1,5 @@
 ---
-title: NoSQL：Redis入门介绍
+title: 'NoSQL：Redis入门介绍'
 date: 2018-06-05 17:07:44
 tags:
 ---

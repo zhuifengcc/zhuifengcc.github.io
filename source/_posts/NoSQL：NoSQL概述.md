@@ -1,5 +1,5 @@
 ---
-title: NoSQL：NoSQL概述
+title: 'NoSQL：NoSQL概述'
 date: 2018-06-01 20:38:10
 tags:
 ---
