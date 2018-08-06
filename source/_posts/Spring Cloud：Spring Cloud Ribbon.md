@@ -20,7 +20,7 @@ Spring Cloud Ribbon是一个基于HTTP和TCP的客户端负载均衡，他基于
 ### GET请求
 可通过两个方法进行调用实现
 
-1、getForEntity(返回ResponseEntity对象，是Spring对HTTP请求相应的封装)
+1、getForEntity(返回ResponseEntity对象，是Spring对HTTP请求响应的封装)
 
 提供3个重载，具体可查询相关文档
 
