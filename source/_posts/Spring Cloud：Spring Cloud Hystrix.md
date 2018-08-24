@@ -12,6 +12,17 @@ Spring Cloud Hystirx实现了断路器、线程隔离等一系列服务保护功
 
 ## Quick Start
 我们模拟一个服务调用关系：
-![快速入门](https://raw.githubusercontent.com/wiki/zhuifengcc/zhuifengcc.github.io/images/Spring Cloud/Spring Cloud Hystrix/1-1.png)
 
-若此时关闭其中一个服务实例，
+![快速入门](https://raw.githubusercontent.com/wiki/zhuifengcc/zhuifengcc.github.io/images/Spring Cloud/Spring Cloud Hystrix/2-1.png)
+
+若此时关闭其中一个服务实例，发送Get请求到消费者http://localhost:9000/ribbon-consumer 当轮询到不可用的服务实例的时候，可以看到输出如下：
+
+![未配置断路器](https://raw.githubusercontent.com/wiki/zhuifengcc/zhuifengcc.github.io/images/Spring Cloud/Spring Cloud Hystrix/2-2.png)
+
+我们再看看引入Spring Cloud Hystrix之后的情形，在maven中引入Spring-cloud-starter-hystrix依赖，随后我们在consumer的主类上通过使用注解@EnableCircuitBreaker开启断路器功能
+
+![未配置断路器](https://raw.githubusercontent.com/wiki/zhuifengcc/zhuifengcc.github.io/images/Spring Cloud/Spring Cloud Hystrix/2-3.png)
+
+ps：这里也可以直接使用注解@SpringCloudApplication，查看源码可以看到是包含@SpringBootApplication、@EnableDiscoveryClient、@EnableCircuitBreaker，so一个标准的SpringCloud应用应包含服务发现和断路器。
+
+在Service中新建方法调用
