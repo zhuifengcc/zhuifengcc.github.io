@@ -2,6 +2,7 @@
 title: 'NoSQL：Redis入门介绍'
 date: 2018-06-05 17:07:44
 tags:
+categories: NoSql
 ---
 ## 一、Redis入门概述
 ### 1.Redis是什么

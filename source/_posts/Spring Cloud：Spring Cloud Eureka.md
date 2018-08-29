@@ -2,6 +2,7 @@
 title: 'Spring Cloud：Spring Cloud Eureka'
 date: 2018-05-29 15:31:15
 tags:
+categories: Spring Cloud 
 ---
 
 ## 服务治理

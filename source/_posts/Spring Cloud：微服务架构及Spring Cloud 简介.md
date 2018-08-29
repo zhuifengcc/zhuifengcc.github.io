@@ -2,6 +2,8 @@
 date: 2018-05-24 11:08
 status: draft
 title: 'Spring Cloud：微服务架构及Spring Cloud 简介'
+tags:
+categories: Spring Cloud 
 ---
 
 ## 什么是微服务架构？

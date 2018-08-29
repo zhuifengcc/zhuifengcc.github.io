@@ -2,6 +2,7 @@
 title: 'NoSQL：NoSQL概述'
 date: 2018-06-01 20:38:10
 tags:
+categories: NoSql 
 ---
 ## 一、发展历程
 ### 1.单机关系型数据库
