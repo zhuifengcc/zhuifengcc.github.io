@@ -222,13 +222,13 @@ observable.subscribe(subscriber);
 
     9.返回成功的响应
 
-### 依赖隔离
+## 依赖隔离
 同Docker线程隔离类似，Hystrix使用“舱壁”模式实现线程池的隔离，他会为每一个依赖服务创建一个独立的线程池，某个依赖服务延迟过高，不会拖慢其他的依赖服务
 
 例如调用产品服务的Command放入A线程池, 调用账户服务的Command放入B线程池. 这样做的主要优点是运行环境被隔离开了. 这样就算调用服务的代码存在bug或者由于其他原因导致自己所在线程池被耗尽时, 不会对系统的其他服务造成影响. 但是带来的代价就是维护多个线程池会对系统带来额外的性能开销. 如果是对性能有严格要求而且确信自己调用服务的客户端代码不会出问题的话, 可以使用Hystrix的信号模式(Semaphores)来隔离资源。
 
-### Hystrix详解
-#### 创建请求命令
+## Hystrix详解
+### 创建请求命令
 我们也可以通过继承的方式实现对依赖服务的调用过程：
 ``` java
 public class UserCommand extends HystrixCommand<User>{
@@ -282,7 +282,7 @@ public class UserService{
     }
 }
 ```
-#### 定义服务降级
+### 定义服务降级
 fallback是Hystrix命令执行失败时使用的后备方法，用来实现服务的降级处理逻辑。
 代码实现方式：
 ``` java
@@ -307,7 +307,7 @@ public class UserCommand extends HystrixCommand<User>{
     }
 }
 ```
-#### 异常处理
+### 异常处理
 异常传播：
 
 在HystrixCommand实现的run方法抛出异常的时候，除了HystrixBadRequestException之外，其他异常均会被认为执行失败并触发服务降级
@@ -337,7 +337,7 @@ User fallback(String id, Throwable e){
     assert "getUserById command failed".equals(e.getMessage());
 }
 ```
-#### 线程池划分
+### 线程池划分
 Hystrix命令默认的线程池划分是根据命令组来实现的。Hystrix可以设置相应的命令名称、命令组及HystrixTheadPoolKey来对线程池进行更灵活的划分
 ``` java
 @HystrixCommand(commandKey = "getUserById", groupKey = "UserGroup", theadPoolKey = "getUserByIdThread")
@@ -345,7 +345,7 @@ public User getUserById(Long id){
     return restTemplate.getForObject("http://USER-SERVICE/users/{1}", User.class, id);
 }
 ```
-#### 请求缓存
+### 请求缓存
 系统用户不断增长时，每个微服务需要承受的并发压力也越来越大，进程间的服务请求调用会有一部分的性能损失。类似数据库的缓存保护也可以运用到依赖服务的调用上
 
 ### 请求合并
@@ -357,7 +357,7 @@ HystrixCollapser在HystrixCommand之前放置一个合并处理器，对同一�
 
     /users/{id}
     /users?ids={ids}
-    
+
 消费端调用Service内有两个方法
 ``` java
 public User find(String id){
