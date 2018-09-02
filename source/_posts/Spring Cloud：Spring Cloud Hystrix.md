@@ -45,7 +45,7 @@ public class DemoApplication {
 }
 ```
 
-ps：这里也可以直接使用注解@SpringCloudApplication，查看源码可以看到是包含@SpringBootApplication、@EnableDiscoveryClient、@EnableCircuitBreaker，so一个标准的SpringCloud应用应包含服务发现和断路器。
+ps:这里也可以直接使用注解@SpringCloudApplication，查看源码可以看到是包含@SpringBootApplication、@EnableDiscoveryClient、@EnableCircuitBreaker，so一个标准的SpringCloud应用应包含服务发现和断路器。
 
 改造服务消费方式，在Service中新建方法调用：
 ``` java
@@ -99,18 +99,16 @@ Hystrix使用了命令模式和RxJava（RxJava的观察者-订阅者模式）
 
 eg:
 
-解耦后
-
-1.操作者：被调用的业务代码
+1.接收者（操作者）：被调用的业务代码
 ``` java 
 public class Reciver {
     public void action(){
-        //业务代码，等待被调用
+        //真正的业务逻辑
     }
 }
 ```
 
-2.Command接口及实现
+2.Command接口及实现—（通过command实现了解耦）
 ``` java 
 public interface Command {
     void excute();
@@ -126,7 +124,7 @@ public class ConcreteCommand implements Command {
     }
 }
 ```
-3.调用者Invoker
+3.调用者Invoker:持有一个命令对象，并且可以在需要的时候通过命令对象完成具体的业务逻辑
 ``` java
 public class Invoker {
     private Command command;
@@ -144,9 +142,9 @@ public class Invoker {
 ``` java
 public class Client{
     public static void main(String[] args){
-        Reciever reciever=new Reciever();
-        Command command=new ConceretCommand(reciever);
-        Invoker invoker=new Invoker();
+        Reciever reciever = new Reciever();
+        Command command = new ConceretCommand(reciever);
+        Invoker invoker = new Invoker();
         invoker.serCommond(commond);
         invoker.action()
     }
@@ -155,24 +153,24 @@ public class Client{
 
 RxJava的观察者-订阅者模式：
 
-    a) Observable向订阅者发布事件，Subsciber接受到后进行处理
-    b) Observable可以发出多个事件，直到结束或者发送异常
+    a) Observable向订阅者Subsciber发布事件，Subsciber接受到后进行处理。事件通常就是对依赖服务的调用
+    b) Observable可以发出多个事件，直到结束或者发生异常
     c) Observable每发送一个事件，就要调用Subsciber的onNext()方法
     d) 每一个Observable执行，最后一定会通过Subsciber的onCompleted或者onError结束操作流
 
 ``` java 
 import rx.Observable;
 import rx.Subscriber;
-//事件源
+//事件源observable
 Observable<String> observable = Observable.create(new Observable.OnSubscribe<String>() {
     @Override
     public void call(Subscriber<? super String> subscriber) {
         subscriber.onNext("Hello RxJava");
-        subscriber.onNext("在不？");
+        subscriber.onNext("I am a programmer");
         subscriber.onCompleted();
     }
 });
-//订阅者
+//订阅者Subsciber
 Subscriber<String> subscriber=new Subscriber<String>() {
     @Override
     public void onCompleted() {
@@ -184,7 +182,7 @@ Subscriber<String> subscriber=new Subscriber<String>() {
     }
     @Override
     public void onNext(String s) {
-        System.out.println("Subscriber"+s);
+        System.out.println("Subscriber: " + s);
     }
 };
 //发布者触发事件发布
@@ -229,5 +227,164 @@ observable.subscribe(subscriber);
 
 例如调用产品服务的Command放入A线程池, 调用账户服务的Command放入B线程池. 这样做的主要优点是运行环境被隔离开了. 这样就算调用服务的代码存在bug或者由于其他原因导致自己所在线程池被耗尽时, 不会对系统的其他服务造成影响. 但是带来的代价就是维护多个线程池会对系统带来额外的性能开销. 如果是对性能有严格要求而且确信自己调用服务的客户端代码不会出问题的话, 可以使用Hystrix的信号模式(Semaphores)来隔离资源。
 
+### Hystrix详解
+#### 创建请求命令
+我们也可以通过继承的方式实现对依赖服务的调用过程：
+``` java
+public class UserCommand extends HystrixCommand<User>{
+    private RestTemplate restTemplate;
+    private Long id;
 
+    public UserCommand(Setter setter, RestTemplate restTemplate, Long id){
+        super(setter);
+        this.restTemplate = restTemplate;
+        this.id = id;
+    }
 
+    @Override
+    protected User run(){
+        return restTemplate.getForObject("http://USER-SERVICE/user/{1}",User.class, id);
+    }
+}
+```
+同步执行：
+``` java
+User u = new UserCommand(restRemple, 1L).execute();
+```
+异步执行：
+``` java
+//返回的对象调用get方法获取结果
+Future<User> futureUser = new UserCommand(restRemple, 1L).queue();
+```
+使用注解的方式：
+``` java 
+//同步的方式
+public class UserService{
+    @Autowired
+    private RestTemplate restTemplate;
+    @HystrixCommand
+    public User getUserById(String uid){
+        return restTemplate.getForObject("http://USER_SERVICE/users/{1}",User.class,id);
+    }
+}
+//异步的方式
+public class UserService{
+    @Autowired
+    private RestTemplate restTemplate;
+    @HystrixCommand
+    public Future<User> getUserById(String uid){
+        return new AsyncResult<User>(){
+            @Override
+            public User invoke(){
+                return restTemplate.getForObject("http://USER_SERVICE/users/{1}",User.class,id);
+            }
+        }
+    }
+}
+```
+#### 定义服务降级
+fallback是Hystrix命令执行失败时使用的后备方法，用来实现服务的降级处理逻辑。
+代码实现方式：
+``` java
+public class UserCommand extends HystrixCommand<User>{
+    private RestTemplate restTemplate;
+    private Long id;
+
+    public UserCommand(Setter setter, RestTemplate restTemplate, Long id){
+        super(setter);
+        this.restTemplate = restTemplate;
+        this.id = id;
+    }
+
+    @Override
+    protected User run(){
+        return restTemplate.getForObject("http://USER-SERVICE/user/{1}",User.class, id);
+    }
+
+    @Override
+    protected User getFallback(){
+        reuturn new User();
+    }
+}
+```
+#### 异常处理
+异常传播：
+
+在HystrixCommand实现的run方法抛出异常的时候，除了HystrixBadRequestException之外，其他异常均会被认为执行失败并触发服务降级
+
+可使用以下的方式：
+``` java 
+@HystrixCommand(ignoreExceptions = {BadRequestException.class})
+public User getUserById(Long id){
+        return restTemplate.getForObject("http://USER-SERVICE/users/{1}", User.class, id);
+    }
+```
+当方法抛出BadRequestException，相当于被ignore，此异常会被包装在HystrixBadRequestException中抛出，不会出发服务降级。
+
+异常获取：
+
+当Hystrix进入服务降级之后，需要针对不同的异常进行针对性的处理，如何获取当前抛出的异常？
+
+传统继承方式中，可以用getFallback()方法通过Throwable getExecutionException()方法来获取具体异常
+
+注解方式中，在fallback实现方法的参数中增加Throwable e 对象的定义
+``` java
+@HystrixCommand(fallbackMethod = "fallback")
+User getUserById(String id){
+    throw new RuntimeException("getUserById command failed")
+}
+User fallback(String id, Throwable e){
+    assert "getUserById command failed".equals(e.getMessage());
+}
+```
+#### 线程池划分
+Hystrix命令默认的线程池划分是根据命令组来实现的。Hystrix可以设置相应的命令名称、命令组及HystrixTheadPoolKey来对线程池进行更灵活的划分
+``` java
+@HystrixCommand(commandKey = "getUserById", groupKey = "UserGroup", theadPoolKey = "getUserByIdThread")
+public User getUserById(Long id){
+    return restTemplate.getForObject("http://USER-SERVICE/users/{1}", User.class, id);
+}
+```
+#### 请求缓存
+系统用户不断增长时，每个微服务需要承受的并发压力也越来越大，进程间的服务请求调用会有一部分的性能损失。类似数据库的缓存保护也可以运用到依赖服务的调用上
+
+### 请求合并
+高并发下远程调用的通信消耗会很大，依赖服务的线程池资源有限，将出现排队等待和和相应延迟。
+引入请求合并HystrixCollapser可以用来实现请求的合并，以减少通信消耗和线程占用。
+
+HystrixCollapser在HystrixCommand之前放置一个合并处理器，对同一依赖服务的多个请求进行整合并以批量方式发起请求
+假设微服务提供两个获取User的接口
+
+    /users/{id}
+    /users?ids={ids}
+    
+消费端调用Service内有两个方法
+``` java
+public User find(String id){
+    return restTemplate.getForObject("http://USER-SERVICE/user/{1}",User.class,id);
+}
+public List<User> findAll(List<String> ids){
+    return restTemplate.getForObject("http://USER-SERVICE/user/{1}",User.class,StringUtils.join(ids,","));
+}
+```
+我们要来实现将多个单一User对象的请求命令合并
+``` java
+@Service
+public class ConsumerService {
+    @Autowired
+    RestTemplate restTemplate;
+
+    //一个用于请求/users/{id}，一个用于请求/users?ids={ids}
+    //在/users/{id}上通过 @HystrixCollapser创建合并请求器，合并窗口时间100毫秒，超过100毫秒无法合并完成则不合并
+    @HystrixCollapser(batchMethod="findAll",collapserProperties={
+        @HystrixProperty(name="timerDelayInMilliseconds",value="100")
+    })
+    public User find(String id){
+        return null;
+    }
+    @HystrixCommand
+    public List<User> findAll(List<String> ids){
+        return restTemplate.getForObject("http://USER-SERVICE/user/{1}",User.class,StringUtils.join(ids,","));
+    }
+}
+```
