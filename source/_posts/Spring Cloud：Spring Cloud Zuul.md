@@ -167,7 +167,7 @@ public class AccessFilter extends ZuulFilter{
     public int filterOrder(){
         return 0;
     }
-    //过滤器是否要被执行，可以制定改函数的过滤器有效范围
+    //过滤器是否要被执行，可以制定该函数的过滤器有效范围
     @Override
     public boolean shouldFilter(){
         return true;
@@ -176,12 +176,12 @@ public class AccessFilter extends ZuulFilter{
     //context.setResponseStatusCode(401)返回错误代码
     @Override
     public Object run(){
-        RequestContext context=RequestContext.getCurrentContext();
-        HttpServletRequest requset=context.getRequset();
-        log.info("send {} request to {}",requset.getMethod(),requset.getRequsetURL().toString());
+        RequestContext context = RequestContext.getCurrentContext();
+        HttpServletRequest requset = context.getRequset();
+        log.info("send {} request to {}", requset.getMethod(), requset.getRequsetURL().toString());
 
-        Obeject accessToken=requset.getParamter("accessToken");
-        if(accessToken==null){
+        Obeject accessToken = requset.getParamter("accessToken");
+        if(accessToken == null){
             log.warn("token empty!!");
             context.setSendZuulResponse(false);
             context.setResponseStatusCode(401);
@@ -259,6 +259,9 @@ public PatternServiceRouteMapper serviceRouteMapper(){
     /user-service/*     匹配任意/user-service/afdsfs
     /user-service/**    匹配任意及多级目录 /user-service/afdsfs、/user-service/afdsfs/zz
 
+## Hystrix和Ribbon支持
+Zuul的依赖包含了Hystrix和Ribbon的依赖，所以Zuul拥有线程隔离和断路器的自我保护功能，以及对服务调用的客户端负载均衡。  
+ps: 使用path与url的映射关系来配置路由规则的时候，路由转发的请求不会采用HystrixCommand包装，故不含有上述所说的Hystrix和Ribbon的特性，故尽量使用path和serviceId的组合来配置
 ## Zuul过滤器！
 zuul包含对请求路由及过滤两个功能，路由将外部请求转发到微服务实例，过滤将请求进行校验，实现请求校验服务聚合等功能
 
@@ -312,7 +315,7 @@ public class ThrowExceptionFilter extends ZuulFilter {
 
     @Override
     public Object run() {
-        log.info("pre filter,throw RuntimeException");
+        log.info("pre filter, throw RuntimeException");
         doSomething();
         return null;
     }
@@ -405,7 +408,7 @@ API网关可是对外提供服务的入口，7X24小时服务系统，不可能�
     spring.application.name=api-gateway
     server.port=5556
     spring.cloud.config.uri=http://localhost:7001/
-    eureka.client.serviceUrl.defaultZone=http://localhost:8765/eureka/
+    eureka.client.serviceUrl.defaultZone=http://localhost:1111/eureka/
 
 5主类添加一个动态刷新RefreshScope
 ``` java

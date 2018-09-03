@@ -119,9 +119,12 @@ spring.cloud.config.server.git.password=*****
 ### 启动应用看结果
 可以通过如下几种方式获取配置信息，其中master为主分支名，如果有其它分支，只需要改为相应的分支名
 
-http://localhost:7001/config/dev/master http://localhost:7001/config/master
+/{application}/{profile}[/{label}]
+/{application}-{profile}.properties
+/{label}/{application}-{profile}.properties
 
-http://localhost:7001/config/test/master http://localhost:7001/master/config.properties
+上述url会映射{application}-{profile}.properties对应的配置文件，{label}对应Git上不同的分支，默认master，如访问http://localhost:7001/config/test
+
 可以看到
 ``` java
 {
@@ -134,13 +137,13 @@ http://localhost:7001/config/test/master http://localhost:7001/master/config.pro
     state: null,
     propertySources: [
         {
-            name: "https://github.com/nijigenCG/SpringCloud-Learn//config-repo/config-test.properties",
+            name: "https://github.com/zhuifengcc/SpringCloud-Learn//config-repo/config-test.properties",
             source: {
             from: "git-test-1.0"
         }
         },
         {
-            name: "https://github.com/nijigenCG/SpringCloud-Learn//config-repo/config.properties",
+            name: "https://github.com/zhuifengcc/SpringCloud-Learn//config-repo/config.properties",
             source: {
             from: "git-default-1.0"
             }
@@ -190,7 +193,8 @@ public class TestController {
 ### 启动看结果
 
     http://localhost:7002/from2
-    版本信息git-test-1.0 http://localhost:7002/from1
+    版本信息git-test-1.0 
+    http://localhost:7002/from1
     git-test-1.0
 ### 服务端详细
 
@@ -201,7 +205,8 @@ public class TestController {
 包含如下几个要素：
 
 远程Git仓库 Config Server
-本地Git仓库：存放获取的Git配置本地 Server A、Server B
+本地Git仓库：存放获取的Git配置本地 
+Server A、Server B
 获取配置流程：
 
 启动应用，根据bootstrap.properties中的{application应用名}、{profile环境名}、{label分支名}，向config Server发起请求 Config Server维护自己的Git仓库，查找相应配置信息，通过git clone下载到文件系统
@@ -224,9 +229,16 @@ Config server会默认从应用的src/main/resource下搜索配置文件。
 ### 安全性
 配置中心内容敏感，结合Spring Security可以实现
 pom中引入security 在配置文件中指定用户名密码
+``` java
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-security</artifactId>
+</dependency>
+```
 
     security.user.name=user
     security.user.password=f4s8f1w9fs
+
 启动config-server，可以访问http://localhost:7001/config/test/master
 
 会跳转到登陆页面
@@ -241,19 +253,25 @@ pom中引入security 在配置文件中指定用户名密码
 
 传统模式：
 
-多个config服务器，将指向同一个Git仓库，客户端通过config服务器的负载均衡器获取配置 服务模式：
+多个config服务器，将指向同一个Git仓库，客户端通过config服务器的负载均衡器获取配置 
+服务模式：
+
 将config作为微服务纳入eureka
 ### config server改造
 接下来，我们来看如何将config加入到eureka中
 改造开始：
 
-config server pom增加eureka application.properties配置添加
+config server  
+pom增加eureka   
+application.properties配置添加
 
-    eureka.client.serviceUrl.defaultZone=http://localhost:8765/eureka/
+    eureka.client.serviceUrl.defaultZone=http://localhost:1111/eureka/
+
 主类添加@EnableDiscoveryClient 启动eureka和config server，可以看到注册上了
 
 ### client改造
-pom引入eureka bootstrap.properties中增加配置
+pom引入eureka  
+bootstrap.properties中增加配置
 
     spring.application.name=config
     server.port=7002
@@ -262,7 +280,8 @@ pom引入eureka bootstrap.properties中增加配置
     spring.cloud.config.discovery.service-id=CONFIG-SERVER
     spring.cloud.config.profile=test
 
-    eureka.client.serviceUrl.defaultZone=http://localhost:8765/eureka/
+    eureka.client.serviceUrl.defaultZone=http://localhost:1111/eureka/
+
 主类添加@EnableDiscoveryClient 启动，按之前的访问/from、/from2接口，可以看到实现了
 ### 动态刷新配置
 spring cloud config可以实现实时更新配置，我们接着来改造。我们刚才启动的项目，访问/from
@@ -270,7 +289,7 @@ spring cloud config可以实现实时更新配置，我们接着来改造。我�
 
     git-test-1.0
 
-修改配种后Git推送出去，发现访问/from还是没有发生变化。
+修改配置后Git推送出去，发现访问/from还是没有发生变化。
 
 需要修改配置。在clien端开启动态刷新
 
@@ -285,6 +304,6 @@ spring cloud config可以实现实时更新配置，我们接着来改造。我�
 
 我们通过对client Post请求localhost:7002/refresh然后再访问可看到更新完成
 
-改功能可以同Git仓库的WebHook进行关联，当Git提交变化时，就向相应的阻止发送/refresh post请求。
+改功能可以同Git仓库的WebHook进行关联，当Git提交变化时，就向相应的主机发送/refresh post请求。
 问题来了，系统壮大后，维护配置刷新也会造成系统负担，而且容易犯错，如何解决复杂度？
 我们需要SpringCloudBus来实现以消息总线的反思进行配置变更通知！

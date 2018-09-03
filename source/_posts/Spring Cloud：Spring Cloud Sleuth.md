@@ -11,6 +11,13 @@ categories: Spring Cloud
 eureka-server
 微服务1，实现一个/trace-1接口，调用这个接口将触发对trace-2应用的调用
 pom引入ribbon、web、eureka、sleuth
+``` java
+ <dependency>
+    <groupId>org.springframework.cloud</groupId>
+    <artifactId>spring-cloud-starter-sleuth</artifactId>
+</dependency>
+```
+
 ``` java 
 @RestController
 @EnableDiscoveryClient
@@ -33,9 +40,11 @@ public class SleuthApplication {
 }
 ```
 配置
+``` java
 spring.application.name=trace1
 server.port=9101
-eureka.client.serviceUrl.defaultZone=http://localhost:8765/eureka
+eureka.client.serviceUrl.defaultZone=http://localhost:1111/eureka
+```
 
 微服务2
 ``` java
@@ -59,16 +68,16 @@ INFO [trace1,e6032bd804035fe4,e6032bd804035fe4,false] 19800 — [nio-9101-exec-1
 
 INFO [trace2,e6032bd804035fe4,7af75df6c4f9693c,false] 11272 — [nio-9102-exec-1] com.cg.sleuth2.Sleuth2Application : ——call trace2————–
 
-上述info种trace1为应用名，第二个值为Sleuth生成的ID，标记请求链路，第三个值为sleuth生成的另一个id，表示一个基本的工作单元，false表示是否输出到ziplin收集展示
+上述info种trace1为应用名，第二个值为Sleuth生成的ID(Trace ID)，标记请求链路，第三个值为sleuth生成的另一个id(Span ID)，表示一个基本的工作单元，比如发送一个HTTP请求，false表示是否输出到ziplin收集展示
 
 ## 跟踪原理
 请求发送到分布式系统入口端点时，sleuth为该请求创建一个唯一标识，分布式系统内部流转时，始终传递该唯一表示，直到返回给请求方。通过traceID，可以将请求过程的日志关联起来
-为了统计各个单元处理时间延迟，当请求到达服务时，通过唯一标识来标记他的开始及结束。
-引入sleuth后，可以自动为当前应用构建起各种通信通道的最终机制：如rabbitMQ传递请求、zuul代理传递请求、resttemplate请求
+为了统计各个单元处理时间延迟，当请求到达服务时，通过唯一标识(SpanID)来标记他的开始及结束。
+引入sleuth后，可以自动为当前应用构建起各种通信通道的最终机制：如rabbitMQ传递请求、zuul代理传递请求、restTemplate请求
 
-上述示例通过resttemplate实现，sleuth会对该请求追踪\
+上述示例通过restTemplate实现，sleuth会对该请求追踪
 ## 抽样收集
-追踪通过traceId和span Id实现了，但是分布式系统加入对所有进行追踪，将产生海量日志数据，对性能造成影响，日志储存开销也很大。之前的第四个值就是用来代表该信息是否要被后续的跟踪信息收集器获取和储存。
+追踪通过trace ID和span ID实现了，但是分布式系统加入对所有进行追踪，将产生海量日志数据，对性能造成影响，日志储存开销也很大。之前的第四个值就是用来代表该信息是否要被后续的跟踪信息收集器获取和储存。
 sleuth通过Sampler接口实现
 ``` java 
 public interface Sampler{
@@ -84,7 +93,7 @@ public interface Sampler{
 
 ## Logstash整合
 之前实现了通过日志添加跟踪信息的功能，但是，在海量的日志文件中去排查分析是基本不可能的。
-一般的日志分析平台有ELK，可以轻松搜索出我么想要的明细日志。
+一般的日志分析平台有ELK，可以轻松搜索出我们想要的明细日志。
 ELK 平台由ElesticSearch、Logstash、Kibana组成
 
     ElesticSearch:开源分布式搜索引擎。分布式、零配置，自动发现。。。
@@ -95,7 +104,13 @@ ELK 平台由ElesticSearch、Logstash、Kibana组成
  ## 整合过程
 
 1.pom引入logstash-logback-encoder依赖
-
+``` java
+ <dependency>
+    <groupId>net.logstash.logback</groupId>
+    <artifactId>logstash-logback-encoder</artifactId>
+    <version>4.6</version>
+</dependency>
+```
 2./resource下创建bootstrap.properties配置文件，将spring.application.name=trace-1配置移动到该文件里，因为logback-spring.xml在application.properties之前加载
 
 3./resource下创建logback-spring.xml.
@@ -161,7 +176,6 @@ ELK 平台由ElesticSearch、Logstash、Kibana组成
 ELK缺少对请求链路中各个阶段时间延迟的关注，使用zipkin可以解决。
 zippkin基于google Dapper，可以使用它来收集各个服务器上请求链路的跟踪数据，并通过它提供的REST API接口来辅助对分布式系统的监控程序。
 
-## Zuul网关
 ![架构图](https://raw.githubusercontent.com/wiki/zhuifengcc/zhuifengcc.github.io/images/Spring Cloud/Spring Cloud Sleuth/7-1.png)
 
 Collector：收集器组件，处理从外部系统发送过来的跟踪信息，转换为Zipkin内部处理的Span格式

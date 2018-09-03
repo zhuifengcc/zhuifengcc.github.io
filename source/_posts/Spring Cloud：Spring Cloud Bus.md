@@ -26,7 +26,7 @@ pom增加amqp和actuator（提供刷新端点）； 配置中增加RabbitMQ的�
 3)启动两个config-client-eureka，在不同的port上
 
 4）试验：我们先访问config-client-eureka /from请求，可以看到获取到了配置信息
-然后我们修改repo的配置，然后post请求/bus/refresh到onfig-client-eureka.
+然后我们修改repo的配置，然后post请求/bus/refresh到config-client-eureka.
 然后我们再访问两个客户端的/from ，将会看到修改后的配置文件
 
 ![架构图](https://raw.githubusercontent.com/wiki/zhuifengcc/zhuifengcc.github.io/images/Spring Cloud/Spring Cloud Bus/5-1.png)
