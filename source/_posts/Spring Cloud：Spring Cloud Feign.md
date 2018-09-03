@@ -12,7 +12,7 @@ categories: Spring Cloud
 ``` java 
     <dependency>
         <groupId>org.springframework.cloud</groupId>
-        <artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
+        <artifactId>spring-cloud-starter-netflix-eureka-server</artifactId>
     </dependency>
     <dependency>
         <groupId>org.springframework.cloud</groupId>
@@ -39,9 +39,9 @@ categories: Spring Cloud
     public class HelloController {
         @Autowired
         private HelloService helloService;
-        @RequestMapping(value = "/fegin-consumer",method = RequestMethod.GET)
+        @RequestMapping(value = "/fegin-consumer", method = RequestMethod.GET)
         public String helloConsumer(){
-            return helloService.hello();
+            return helloService.index();
         }
     }
 ```
@@ -49,8 +49,8 @@ categories: Spring Cloud
 ``` java
     @FeignClient("hello-service")
     public interface HelloService {
-        @RequestMapping("/hello")
-        String hello();
+        @RequestMapping("/index")
+        String index();
     }
 ```
 5.properties
@@ -60,6 +60,9 @@ categories: Spring Cloud
     eureka.client.serviceUrl.defaultZone=http://localhost:1111/eureka/
 ```
 可以看到consumer没有通过restTemplate，直接同服务名@FeignClient(“hello-service”)通过http://localhost:9001/feign-consumer ,通过接口的方式访问了hello-service服务提供者，这是一个不带参数的REST服务绑定。
+
+![调用效果展示](https://raw.githubusercontent.com/wiki/zhuifengcc/zhuifengcc.github.io/images/Spring Cloud/Spring Cloud Feign/1-1.png)
+
 ## 不同的参数绑定方法
 实际业务接口复杂得多，HTTP各个位置需要传入不同类型的参数，返回也可能是一个复杂的对象。首先，我们扩展一下客户端的服务提供者
 1.添加User pojo，包含name，age，及空构造！
@@ -85,13 +88,15 @@ public class HelloController {
         return "hello" + user.getName() + "," + user.getAge();
     }
 }
-``` 
+```
+
 开始对feign consumer绑定请求，首先添加User类。feign采用的类似mvc的语法，但不是完全一样，比如MVC中，注解会根据参数名来作为默认值，但是Feign中绑定的参数必须通过value属性来指明参数名。不然会抛出IllegalStateException异常，value属性不能为空。
 
 1.改造service
-``` java  
-    @FeignClient(“hello-server”)
-    public interface HelloService {
+
+``` java
+@FeignClient("hello-server")
+public interface HelloService {
     @RequestMapping(“/hello”)
     String hello();
 
@@ -105,8 +110,10 @@ public class HelloController {
     String hello(@RequestBody User user);
 }
 ```
+
 2.改造controller
-``` java  
+
+``` java
 @RestController
 public class HelloController {
     @Autowired

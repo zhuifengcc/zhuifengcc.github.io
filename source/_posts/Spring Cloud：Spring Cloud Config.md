@@ -4,8 +4,7 @@ date: 2018-08-17 23:40:18
 tags:
 categories: Spring Cloud 
 ---
-Spring Cloud Config是用来为分布式系统中基础设施和微服务提供集中化外部配置的支持，分为客户端和服务端。
-
+Spring Cloud Config是用来为分布式系统中基础设施和微服务提供集中化外部配置的支持，分为客户端和服务端。  
 *客户端：微服务的各个微服务应用
 
     通过指定的配置中心来管理应用资源与业务的配置内容，启动时从配置中心获取加载配置信息
@@ -24,7 +23,7 @@ Spring Cloud Config是用来为分布式系统中基础设施和微服务提供�
     xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.cg</groupId>
+    <groupId>com.demo</groupId>
     <artifactId>config-server</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <packaging>jar</packaging>
@@ -98,7 +97,7 @@ Spring Cloud Config是用来为分布式系统中基础设施和微服务提供�
 spring.application.name=config-server
 server.port=7001
 
-spring.cloud.config.server.git.uri=https://github.com/nijigenCG/SpringCloud-Learn/
+spring.cloud.config.server.git.uri=https://github.com/zhuifengcc/SpringCloud-Learn/
 spring.cloud.config.server.git.searchPaths=config-repo
 spring.cloud.config.server.git.username=*****
 spring.cloud.config.server.git.password=*****

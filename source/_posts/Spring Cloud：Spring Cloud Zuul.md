@@ -5,12 +5,11 @@ tags:
 categories: Spring Cloud 
 ---
 ## Zuul网关
-![系统架构](https://raw.githubusercontent.com/wiki/zhuifengcc/zhuifengcc.github.io/images/Spring Cloud/Spring Cloud Zuul/3-1.png)
-
 内部service通过服务注册发现相互调用，还有对外的OpenService，提供对外RESTful API服务，通过Nginx等进行负载均衡后提供给外部客户端。
 
-一、但是为了让路由正确分发，实例增减或ip变动等发生的情况，需要手动同步维护，系统规模大是，维护及其不便。
+![基础架构图](https://raw.githubusercontent.com/wiki/zhuifengcc/zhuifengcc.github.io/images/Spring Cloud/Spring Cloud Zuul/3-1.png)
 
+一、但是为了让路由正确分发，实例增减或ip变动等发生的情况，需要手动同步维护，系统规模大是，维护及其不便。  
 二、对外服务会有权限校验等机制，如用户登陆等，为了防止客户端发起请求时被篡改等，还会有签名校验机制。微服务将原本单一的应用拆成了多个应用，我们不得不在每个应用中去实现这样一套逻辑，这些校验代码非常冗余。一旦修改逻辑，需要将所有的应用上的逻辑进行修改。
 
 所有我们需要API网关，所有外部客户端访问都需要经过它来进行过滤调度！
@@ -28,7 +27,7 @@ Zuul通过服务注册中心注册到Eureka，从而获取到服务实例。Zuul
     xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-<groupId>com.cg</groupId>
+<groupId>com.demo</groupId>
 <artifactId>api-gateway</artifactId>
 <version>0.0.1-SNAPSHOT</version>
 <packaging>jar</packaging>
@@ -119,23 +118,42 @@ Zuul通过服务注册中心注册到Eureka，从而获取到服务实例。Zuul
 </project>
 ```
 2.主类增加@EnableZuulProxy
-
-3.配置
 ``` java
-spring.application.name=api-gateway
-server.port=5555
-#服务实例映射
-zuul.routes.api-a-url.path=/api-a/**
-zuul.routes.api-a.serviceId=HELLO-SERVER
-zuul.routes.api-b-url.path=/api-b/**
-zuul.routes.api-b.serviceId=FEIGN-CONSUMER
-#zuul注册到eureka
-eureka.client.serviceUrl.defaultZone=http://localhost:8765/eureka
+@EnableZuulProxy
+@SpringCloudApplication
+public class ApiGatewayApplication {
+
+	public static void main(String[] args) {
+		SpringApplication.run(ApiGatewayApplication.class, args);
+	}
+}
 ```
-然后我们启动eureka注册中心、hello-server provider、feign-consumer、还有api-gateway
+3.配置
+
+    spring.application.name=api-gateway
+    server.port=5555
+    #服务实例映射
+    zuul.routes.api-a-url.path=/api-a/**
+    #传统路由方式，维护成本高
+    #zuul.routes.api-a-url.url=http://localhost:8080/ 
+    #面向服务的路由方式
+    zuul.routes.api-a.serviceId=HELLO-SERVER
+    zuul.routes.api-b-url.path=/api-b/**
+    zuul.routes.api-b.serviceId=FEIGN-CONSUMER
+    #zuul注册到eureka
+    eureka.client.serviceUrl.defaultZone=http://localhost:1111/eureka
+
+然后我们启动eureka注册中心、hello-server、feign-consumer、还有api-gateway
 已经配置了路由规则。我们访问api的http://localhost:5555/api-b/feign-consumer .api网关吧请求转发到相应的服务实例上去，只需配置简单的path和serviceId映射组合即可。
+
+ps: 若出现不能正常路由到相应服务的情况，考虑是否超时，添加配置
+
+    zuul.host.socket-timeout-millis=60000
+    zuul.host.connect-timeout-millis=10000
+    hystrix.command.default.execution.isolation.thread.timeoutInMilliseconds=60000
+
 ## 请求过滤
-实现请求路由的基本功能后，微服务可以通过统一的API网关作为入口进行访问。但是访问权限等没有限制，任何请求都会被转发，最简单粗暴的是在所有微服务上添加一套权限逻辑，但是不可取。我们需要剥离，形成一个独立的鉴权服务。而Zuul的一个核心功能就是：请求过滤，只需要继承ZuulFilter抽象类并实现4个抽象函数即可完成请求的拦截与过滤。耐看一个简单的Zuul过滤器
+实现请求路由的基本功能后，微服务可以通过统一的API网关作为入口进行访问。但是访问权限等没有限制，任何请求都会被转发，最简单粗暴的是在所有微服务上添加一套权限逻辑，但是不可取。我们需要剥离，形成一个独立的鉴权服务。而Zuul的一个核心功能就是：请求过滤，只需要继承ZuulFilter抽象类并实现4个抽象函数即可完成请求的拦截与过滤。来看一个简单的Zuul过滤器
 ``` java
 public class AccessFilter extends ZuulFilter{
     private static Logger log=LoggerFactory.getLogger(AccessFilter.class);
@@ -183,39 +201,37 @@ public AccessFilter accessFilter（）{
 }
 ```
 我们测试
-``` java 
-http://localhost:5555/api-a/hello
-http://localhost:5555/api-a/hello&accessToken=token
-```
+
+    http://localhost:5555/api-a/index
+    http://localhost:5555/api-a/index&accessToken=token
+
 ## 路由详解
 ### 路由的一些基本配置
 回顾一下路由配置
-``` java
-zuul.routes.api-a-url.path=/api-a/**
-zuul.routes.api-a.serviceId=HELLO-SERVER
-zuul.routes.api-b-url.path=/api-b/**
-zuul.routes.api-b.serviceId=FEIGN-CONSUMER
-```
+
+    zuul.routes.api-a-url.path=/api-a/**
+    zuul.routes.api-a.serviceId=HELLO-SERVER
+    zuul.routes.api-b-url.path=/api-b/**
+    zuul.routes.api-b.serviceId=FEIGN-CONSUMER
+
 除了path与serviceId的映射外，还有更简洁的配置
-``` java
-#zuul.routes.<serviceId>=<path>
-zuul.routes.user-service=/user-service/**
-#将zuul看作eureka下的一个服务，他会获取所有实例清单，自己就得到了serviceID与服务实例地址的映射，api网关可自动找到最佳匹配
-```
+
+    #zuul.routes.<serviceId>=<path>
+    zuul.routes.user-service=/user-service/**
+    #将zuul看作eureka下的一个服务，他会获取所有实例清单，自己就得到了serviceID与服务实例地址的映射，api网关可自动找到最佳匹配
+
 虽然eureka与zuul省去了维护服务配置的工作，但是实际情况一般如下
-``` java 
-zuul.routes.fegin-consumer.path=/fegin-consumer/**
-zuul.routes.fegin-consumer.serviceId=fegin-consumer
-```
-zuul的默认规则可以完全不需要我们这样一个一个配置。
 
-当我们为API网关引入eureka后，每个服务都会创建一个默认的路由规则，path使用serviceId配置的服务名作为请求前缀。
+    zuul.routes.fegin-consumer.path=/fegin-consumer/**
+    zuul.routes.fegin-consumer.serviceId=fegin-consumer
 
+zuul的默认规则可以完全不需要我们这样一个一个配置。  
+当我们为API网关引入eureka后，每个服务都会创建一个默认的路由规则，path使用serviceId配置的服务名作为请求前缀。  
 由于默认情况eureka的所有服务都会被zuul自动创建映射，而有些我们不希望暴露出去，可以用
-``` java
-zuul.ignore-serices=*
-zuul.routes.hello-server.serviceId=hello-server
-```
+
+    zuul.ignore-serices=*
+    zuul.routes.hello-server.serviceId=hello-server
+
 如上设置一个服务名匹配表达式来定义不自动映射，只需要添加我们想要暴露的服务hello-server，而fegin-consumer则不会暴露出去
 ### 自定义路由规则
 构建微服务时，为了兼容不同外部版本，一般会采用开闭原则进行设计开发。我们可以根据服务版本表示来知道，如下
@@ -223,10 +239,10 @@ userservice-v1、userservice-v2、orderservice-v1、orderservice-v2
 
 这样，路由默认会映射成/userservice-v1、/userservice-v2
 但是这样不利于通过规则进行管理，可以改成如下这样
-``` java
-/v1/userservice
-//PatternServiceRouteMapper添加到主类下，通过正则表达式定义路由映射
-```
+
+    /v1/userservice
+    //PatternServiceRouteMapper添加到主类下，通过正则表达式定义路由映射
+
 ``` java
 @Bean
 public PatternServiceRouteMapper serviceRouteMapper(){
@@ -242,6 +258,7 @@ public PatternServiceRouteMapper serviceRouteMapper(){
     /user-service/?     匹配一个/user-service/a、/user-service/d、/user-service/3
     /user-service/*     匹配任意/user-service/afdsfs
     /user-service/**    匹配任意及多级目录 /user-service/afdsfs、/user-service/afdsfs/zz
+
 ## Zuul过滤器！
 zuul包含对请求路由及过滤两个功能，路由将外部请求转发到微服务实例，过滤将请求进行校验，实现请求校验服务聚合等功能
 
@@ -413,5 +430,5 @@ http://localhost:5556/service-a/hello 跳转到了hello server的服务
 http://localhost:5556/service-b 跳转到了百度
 路由实现
 ### 动态过滤器
-过滤请求的动态加载也可以通过类似的方式实现,单有所以不同，路由规则是配置，请求过滤是编码实现。
+过滤请求的动态加载也可以通过类似的方式实现,但有所不同，路由规则是配置，请求过滤是编码实现。
 所以对于请求过滤去的动态加载，需要借助基于JVM实现的动态语言才行，比如Groovy
