@@ -195,7 +195,7 @@ public class Send {
     public static  void sendmess() throws IOException, TimeoutException, InterruptedException {
         Channel channel=ConnectionUtils.getChan();
         channel.queueDeclare(QUEUE_NAME, false, false, false, null);
-        String message = "Hello CG!";
+        String message = "Hello!";
         for(int i=1;i<1000;i++){
             channel.basicPublish("", QUEUE_NAME, null, message.getBytes());
             Thread.sleep(500);
@@ -244,7 +244,7 @@ public class Send {
         Channel channel=ConnectionUtils.getChan();
         channel.queueDeclare(QUEUE_NAME, false, false, false, null);
         for(int i=1;i<100;i++){
-            String message = "Hello CG!";
+            String message = "Hello!";
             message+=i;
             channel.basicPublish("", QUEUE_NAME, null, message.getBytes());
             System.out.println(" [x] Sent '" + message + "{}'"+i);
@@ -319,7 +319,7 @@ public class Send {
         //告知队列,每次只发一条，消费者处理确认前不再发送
         channel.basicQos(1);
         for(int i=1;i<1000;i++){
-            String message = "Hello CG!";
+            String message = "Hello!";
             message+=i;
             channel.basicPublish("", QUEUE_NAME, null, message.getBytes());
             System.out.println(" [x] Sent '" + message + "{}'"+i);
@@ -871,7 +871,7 @@ Stream构建的应用程序与消息中间件是通过Binder关联起来，实�
     spring.cloud.stream.binding.input.destination=raw-sensor-data
     spring.rabbitmq.host=localhost
     spring.rabbitmq.port=5672
-    spring.rabbitmq.username=cg
+    spring.rabbitmq.username=qx
     spring.rabbitmq.password=123456
 ##### 发布订阅
 stream消息通信遵循了发布订阅。一条消息投递到中间件后，会通过通向topic主题进行广播，订阅者收到它并触发自身的业务逻辑进行处理。不同的消息中间件topic对应不用的概念

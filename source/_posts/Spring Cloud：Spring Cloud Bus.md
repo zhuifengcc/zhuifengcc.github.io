@@ -20,7 +20,7 @@ pom增加amqp和actuator（提供刷新端点）； 配置中增加RabbitMQ的�
 
     spring.rabbitmq.host=localhost
     spring.rabbitmq.port=5672
-    spring.rabbitmq.username=cg
+    spring.rabbitmq.username=qx
     spring.rabbitmq.password=123456
 
 3)启动两个config-client-eureka，在不同的port上
