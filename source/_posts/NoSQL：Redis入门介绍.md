@@ -87,7 +87,7 @@ Redis：REmote DIctionary Server（远程字典服务器），是一个高性能
 
 ![redis解压](https://raw.githubusercontent.com/wiki/zhuifengcc/zhuifengcc.github.io/images/NoSQL/redis_1/2-17.png)
 
-下载完毕并解压后，进入/opt/redis-4.0.8目录，可以看到redis.conf配置文件，我们将文件拷贝一份至根目录新建的文件夹myredis下以做备份，使用vi命令打开备份的redis.conf文件，在general部分可以看到如下配置，默认redis不会以进程的方式存在，为了后续测试，我们将该属性修改为yes并保存退出
+下载完毕并解压后，进入/opt/redis-4.0.8目录，可以看到redis.conf配置文件，我们将文件拷贝一份至根目录新建的文件夹myredis下以做备份，使用vi命令(less -MN)打开备份的redis.conf文件，在general部分可以看到如下配置，默认redis不会以进程的方式存在，为了后续测试，我们将该属性修改为yes并保存退出
 
 ![配置文件备份](https://raw.githubusercontent.com/wiki/zhuifengcc/zhuifengcc.github.io/images/NoSQL/redis_1/2-18.png)
 
@@ -142,3 +142,41 @@ Redis：REmote DIctionary Server（远程字典服务器），是一个高性能
 ![进程查看附图](https://raw.githubusercontent.com/wiki/zhuifengcc/zhuifengcc.github.io/images/NoSQL/redis_1/2-34.png)
 
 以上就是redis整个的安装过程，后续对redis的数据结构进行整合和记录
+### 3.Redis的配置文件
+
+    1.Redis默认不是以守护进程的方式运行，可以通过该配置项修改，使用yes启用守护进程
+      daemonize no
+    2.当Redis以守护进程方式运行时，Redis默认会把pid写入/var/run/redis.pid，可以通过pidfile指定
+      pidfile /var/run/redis.pid
+    3.指定Redis监听端口，默认端口为6379(MERZ)
+      port 6379
+    4.绑定的主机地址
+      bind 127.0.0.1
+    5.当客户端闲置多长时间后关闭连接，如果指定为0，表示关闭该功能
+      timeout 300
+    6.指定日志记录级别，Redis总共支持四个级别: debug, verbose, notice, warning，默认为verbose
+      loglevel verbose
+    7.日志记录方式，默认为标准输出，如果配置Redis为守护进程方式运行，而这里又配置为日志记录方式为标准输出，则日志将会发送给/dev/null
+      logfile stdout
+    8.设置数据库的数量，默认数据库为0，可以使用SELECT <dbid>命令在连接上指定数据库id
+      databases 16
+    9.指定在多长时间内，有多少次更新操作，就将数据同步到数据文件，可以多个条件配合
+      save <seconds> <changes>
+      Redis 默认配置文件中提供了三个条件
+      save 900 1  900秒（15分钟）内有1个更改
+      save 300 10  300秒（5分钟）内有10个更改
+      save 60 10000  60秒内有10000个更改
+    10.指定存储至本地数据库时是否压缩数据，默认为yes，Redis采用LZF压缩，如果为了节省CPU时间，可以关闭该选项，但会导致数据库文件变的巨大
+      rdbcompression yes
+    11.指定本地数据库文件名，默认值为dump.rdb
+      dbfilename dump.rdb
+    12.指定本地数据库存放目录
+      dir ./
+    13.设置当本机为slave服务时，设置master服务的IP地址及端口，在Redis启动时，它会自动从master进行数据同步
+      slaveof <masterip> <masterport>
+    14.当master服务设置了密码保护时，slave服务连接master的密码
+      masterauth <master-password>
+    15.设置Redis连接密码，如果配置了连接密码，客户端在连接Redis时需要通过AUTH <password>命令提供密码，默认关闭
+      requirepass 123
+    16.设置同一时间最大客户端连接数，默认无限制，Redis可以同时打开的客户端连接数为Redis进程可以打开的最大文件描述符数，如果设置maxclients 0，表示不作限制。当客户端连接数达到限制时，Redis会关闭新的连接并向客户返回 max number of clients reached错误信息
+      maxclients 128
