@@ -137,6 +137,9 @@ Redis：REmote DIctionary Server（远程字典服务器），是一个高性能
 
 ![运行redis进程附图](https://raw.githubusercontent.com/wiki/zhuifengcc/zhuifengcc.github.io/images/NoSQL/redis_1/2-33.png)
 
+    服务端启动（指定配置文件启动）./bin/redis-server [path]
+    设置了密码的时候，客户端命令：redis-cli -h host -p port -a password
+
 执行ps -ef|grep redis 查看redis进程的运行前后对比情况
 
 ![进程查看附图](https://raw.githubusercontent.com/wiki/zhuifengcc/zhuifengcc.github.io/images/NoSQL/redis_1/2-34.png)
