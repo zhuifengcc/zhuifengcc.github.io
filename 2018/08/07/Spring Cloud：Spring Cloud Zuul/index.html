@@ -1,0 +1,814 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="Hexo, NexT" />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="Zuul网关内部service通过服务注册发现相互调用，还有对外的OpenService，提供对外RESTful API服务，通过Nginx等进行负载均衡后提供给外部客户端。  一、但是为了让路由正确分发，实例增减或ip变动等发生的情况，需要手动同步维护，系统规模大是，维护及其不便。二、对外服务会有权限校验等机制，如用户登陆等，为了防止客户端发起请求时被篡改等，还会有签名校验机制。微服务将原本单一">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Spring Cloud: Spring Cloud Zuul">
+<meta property="og:url" content="http://yoursite.com/2018/08/07/Spring Cloud：Spring Cloud Zuul/index.html">
+<meta property="og:site_name" content="沐奕">
+<meta property="og:description" content="Zuul网关内部service通过服务注册发现相互调用，还有对外的OpenService，提供对外RESTful API服务，通过Nginx等进行负载均衡后提供给外部客户端。  一、但是为了让路由正确分发，实例增减或ip变动等发生的情况，需要手动同步维护，系统规模大是，维护及其不便。二、对外服务会有权限校验等机制，如用户登陆等，为了防止客户端发起请求时被篡改等，还会有签名校验机制。微服务将原本单一">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="https://raw.githubusercontent.com/wiki/zhuifengcc/zhuifengcc.github.io/images/Spring Cloud/Spring Cloud Zuul/3-1.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/wiki/zhuifengcc/zhuifengcc.github.io/images/Spring Cloud/Spring Cloud Zuul/3-2.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/wiki/zhuifengcc/zhuifengcc.github.io/images/Spring Cloud/Spring Cloud Zuul/3-3.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/wiki/zhuifengcc/zhuifengcc.github.io/images/Spring Cloud/Spring Cloud Zuul/3-4.png">
+<meta property="og:updated_time" content="2018-10-14T08:28:05.690Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Spring Cloud: Spring Cloud Zuul">
+<meta name="twitter:description" content="Zuul网关内部service通过服务注册发现相互调用，还有对外的OpenService，提供对外RESTful API服务，通过Nginx等进行负载均衡后提供给外部客户端。  一、但是为了让路由正确分发，实例增减或ip变动等发生的情况，需要手动同步维护，系统规模大是，维护及其不便。二、对外服务会有权限校验等机制，如用户登陆等，为了防止客户端发起请求时被篡改等，还会有签名校验机制。微服务将原本单一">
+<meta name="twitter:image" content="https://raw.githubusercontent.com/wiki/zhuifengcc/zhuifengcc.github.io/images/Spring Cloud/Spring Cloud Zuul/3-1.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2018/08/07/Spring Cloud：Spring Cloud Zuul/"/>
+
+
+
+
+
+  <title>Spring Cloud: Spring Cloud Zuul | 沐奕</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">沐奕</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/08/07/Spring Cloud：Spring Cloud Zuul/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="zhuifengcc">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="沐奕">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Spring Cloud: Spring Cloud Zuul</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-08-07T23:13:58+08:00">
+                2018-08-07
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Spring-Cloud/" itemprop="url" rel="index">
+                    <span itemprop="name">Spring Cloud</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h2 id="Zuul网关"><a href="#Zuul网关" class="headerlink" title="Zuul网关"></a>Zuul网关</h2><p>内部service通过服务注册发现相互调用，还有对外的OpenService，提供对外RESTful API服务，通过Nginx等进行负载均衡后提供给外部客户端。</p>
+<p><img src="https://raw.githubusercontent.com/wiki/zhuifengcc/zhuifengcc.github.io/images/Spring Cloud/Spring Cloud Zuul/3-1.png" alt="基础架构图"></p>
+<p>一、但是为了让路由正确分发，实例增减或ip变动等发生的情况，需要手动同步维护，系统规模大是，维护及其不便。<br>二、对外服务会有权限校验等机制，如用户登陆等，为了防止客户端发起请求时被篡改等，还会有签名校验机制。微服务将原本单一的应用拆成了多个应用，我们不得不在每个应用中去实现这样一套逻辑，这些校验代码非常冗余。一旦修改逻辑，需要将所有的应用上的逻辑进行修改。</p>
+<p>所有我们需要API网关，所有外部客户端访问都需要经过它来进行过滤调度！</p>
+<h2 id="概要"><a href="#概要" class="headerlink" title="概要"></a>概要</h2><p>Zuul通过服务注册中心注册到Eureka，从而获取到服务实例。Zuul会默认通过以服务名作为ContextPath方式来创建映射。</p>
+<p>对于签名校验，登陆等问题，完全可以做成独立的服务，从应用中剥离，在API网关服务上进行统一的调用来对服务接口做前置过滤。可以通过ZUul创建校验过滤器，指定哪些规则需要执行校验逻辑，通过校验才会被路由到具体的微服务接口，使得微服务更加专注于业务逻辑开发。</p>
+<h2 id="Quick-Start"><a href="#Quick-Start" class="headerlink" title="Quick Start"></a>Quick Start</h2><p>我们来新建一个Zuul。</p>
+<p>1.pom<br><figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br></pre></td><td class="code"><pre><span class="line">&lt;?xml version=<span class="string">"1.0"</span> encoding=<span class="string">"UTF-8"</span>?&gt;</span><br><span class="line">&lt;project xmlns=<span class="string">"http://maven.apache.org/POM/4.0.0"</span> xmlns:xsi=<span class="string">"http://www.w3.org/2001/XMLSchema-instance"</span></span><br><span class="line">    xsi:schemaLocation=<span class="string">"http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"</span>&gt;</span><br><span class="line">    &lt;modelVersion&gt;4.0.0&lt;/modelVersion&gt;</span><br><span class="line"></span><br><span class="line">&lt;groupId&gt;com.demo&lt;/groupId&gt;</span><br><span class="line">&lt;artifactId&gt;api-gateway&lt;/artifactId&gt;</span><br><span class="line">&lt;version&gt;0.0.1-SNAPSHOT&lt;/version&gt;</span><br><span class="line">&lt;packaging&gt;jar&lt;/packaging&gt;</span><br><span class="line"></span><br><span class="line">&lt;name&gt;api-gateway&lt;/name&gt;</span><br><span class="line">&lt;description&gt;Demo project for Spring Boot&lt;/description&gt;</span><br><span class="line"></span><br><span class="line">&lt;parent&gt;</span><br><span class="line">    &lt;groupId&gt;org.springframework.boot&lt;/groupId&gt;</span><br><span class="line">    &lt;artifactId&gt;spring-boot-starter-parent&lt;/artifactId&gt;</span><br><span class="line">    &lt;version&gt;2.0.0.RELEASE&lt;/version&gt;</span><br><span class="line">    &lt;relativePath/&gt; &lt;!-- lookup parent from repository --&gt;</span><br><span class="line">&lt;/parent&gt;</span><br><span class="line"></span><br><span class="line">&lt;properties&gt;</span><br><span class="line">    &lt;project.build.sourceEncoding&gt;UTF-8&lt;/project.build.sourceEncoding&gt;</span><br><span class="line">    &lt;project.reporting.outputEncoding&gt;UTF-8&lt;/project.reporting.outputEncoding&gt;</span><br><span class="line">    &lt;java.version&gt;1.8&lt;/java.version&gt;</span><br><span class="line">    &lt;spring-cloud.version&gt;Finchley.M9&lt;/spring-cloud.version&gt;</span><br><span class="line">&lt;/properties&gt;</span><br><span class="line"></span><br><span class="line">&lt;dependencies&gt;</span><br><span class="line">    &lt;dependency&gt;</span><br><span class="line">        &lt;groupId&gt;org.springframework.boot&lt;/groupId&gt;</span><br><span class="line">        &lt;artifactId&gt;spring-boot-starter-actuator&lt;/artifactId&gt;</span><br><span class="line">    &lt;/dependency&gt;</span><br><span class="line">    &lt;dependency&gt;</span><br><span class="line">        &lt;groupId&gt;org.springframework.cloud&lt;/groupId&gt;</span><br><span class="line">        &lt;artifactId&gt;spring-cloud-starter-eureka&lt;/artifactId&gt;</span><br><span class="line">        &lt;version&gt;1.4.4.RELEASE&lt;/version&gt;</span><br><span class="line">    &lt;/dependency&gt;</span><br><span class="line">    &lt;dependency&gt;</span><br><span class="line">        &lt;groupId&gt;org.springframework.cloud&lt;/groupId&gt;</span><br><span class="line">        &lt;artifactId&gt;spring-cloud-starter-netflix-hystrix&lt;/artifactId&gt;</span><br><span class="line">    &lt;/dependency&gt;</span><br><span class="line">    &lt;dependency&gt;</span><br><span class="line">        &lt;groupId&gt;org.springframework.cloud&lt;/groupId&gt;</span><br><span class="line">        &lt;artifactId&gt;spring-cloud-starter-netflix-ribbon&lt;/artifactId&gt;</span><br><span class="line">    &lt;/dependency&gt;</span><br><span class="line">    &lt;dependency&gt;</span><br><span class="line">        &lt;groupId&gt;org.springframework.cloud&lt;/groupId&gt;</span><br><span class="line">        &lt;artifactId&gt;spring-cloud-starter-netflix-zuul&lt;/artifactId&gt;</span><br><span class="line">    &lt;/dependency&gt;</span><br><span class="line"></span><br><span class="line">    &lt;dependency&gt;</span><br><span class="line">        &lt;groupId&gt;org.springframework.boot&lt;/groupId&gt;</span><br><span class="line">        &lt;artifactId&gt;spring-boot-starter-test&lt;/artifactId&gt;</span><br><span class="line">        &lt;scope&gt;test&lt;/scope&gt;</span><br><span class="line">    &lt;/dependency&gt;</span><br><span class="line">    &lt;dependency&gt;</span><br><span class="line">        &lt;groupId&gt;org.springframework.cloud&lt;/groupId&gt;</span><br><span class="line">        &lt;artifactId&gt;spring-cloud-netflix-eureka-server&lt;/artifactId&gt;</span><br><span class="line">        &lt;version&gt;2.0.0.M6&lt;/version&gt;</span><br><span class="line">    &lt;/dependency&gt;</span><br><span class="line">&lt;/dependencies&gt;</span><br><span class="line"></span><br><span class="line">&lt;dependencyManagement&gt;</span><br><span class="line">    &lt;dependencies&gt;</span><br><span class="line">        &lt;dependency&gt;</span><br><span class="line">            &lt;groupId&gt;org.springframework.cloud&lt;/groupId&gt;</span><br><span class="line">            &lt;artifactId&gt;spring-cloud-dependencies&lt;/artifactId&gt;</span><br><span class="line">            &lt;version&gt;$&#123;spring-cloud.version&#125;&lt;/version&gt;</span><br><span class="line">            &lt;type&gt;pom&lt;/type&gt;</span><br><span class="line">            &lt;scope&gt;import&lt;/scope&gt;</span><br><span class="line">        &lt;/dependency&gt;</span><br><span class="line">    &lt;/dependencies&gt;</span><br><span class="line">&lt;/dependencyManagement&gt;</span><br><span class="line"></span><br><span class="line">&lt;build&gt;</span><br><span class="line">    &lt;plugins&gt;</span><br><span class="line">        &lt;plugin&gt;</span><br><span class="line">            &lt;groupId&gt;org.springframework.boot&lt;/groupId&gt;</span><br><span class="line">            &lt;artifactId&gt;spring-boot-maven-plugin&lt;/artifactId&gt;</span><br><span class="line">        &lt;/plugin&gt;</span><br><span class="line">    &lt;/plugins&gt;</span><br><span class="line">&lt;/build&gt;</span><br><span class="line"></span><br><span class="line">&lt;repositories&gt;</span><br><span class="line">    &lt;repository&gt;</span><br><span class="line">        &lt;id&gt;spring-milestones&lt;/id&gt;</span><br><span class="line">        &lt;name&gt;Spring Milestones&lt;/name&gt;</span><br><span class="line">        &lt;url&gt;https:<span class="comment">//repo.spring.io/milestone&lt;/url&gt;</span></span><br><span class="line">        &lt;snapshots&gt;</span><br><span class="line">            &lt;enabled&gt;false&lt;/enabled&gt;</span><br><span class="line">        &lt;/snapshots&gt;</span><br><span class="line">    &lt;/repository&gt;</span><br><span class="line">&lt;/repositories&gt;</span><br><span class="line">&lt;/project&gt;</span><br></pre></td></tr></table></figure></p>
+<p>2.主类增加@EnableZuulProxy<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@EnableZuulProxy</span></span><br><span class="line"><span class="meta">@SpringCloudApplication</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ApiGatewayApplication</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">	<span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">		SpringApplication.run(ApiGatewayApplication.class, args);</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>3.配置</p>
+<pre><code>spring.application.name=api-gateway
+server.port=5555
+#服务实例映射
+zuul.routes.api-a-url.path=/api-a/**
+#传统路由方式，维护成本高
+#zuul.routes.api-a-url.url=http://localhost:8080/ 
+#面向服务的路由方式
+zuul.routes.api-a.serviceId=HELLO-SERVER
+zuul.routes.api-b-url.path=/api-b/**
+zuul.routes.api-b.serviceId=FEIGN-CONSUMER
+#zuul注册到eureka
+eureka.client.serviceUrl.defaultZone=http://localhost:1111/eureka
+</code></pre><p>然后我们启动eureka注册中心、hello-server、feign-consumer、还有api-gateway<br>已经配置了路由规则。我们访问api的<a href="http://localhost:5555/api-b/feign-consumer" target="_blank" rel="noopener">http://localhost:5555/api-b/feign-consumer</a> .api网关吧请求转发到相应的服务实例上去，只需配置简单的path和serviceId映射组合即可。</p>
+<p>ps: 若出现不能正常路由到相应服务的情况，考虑是否超时，添加配置</p>
+<pre><code>zuul.host.socket-timeout-millis=60000
+zuul.host.connect-timeout-millis=10000
+hystrix.command.default.execution.isolation.thread.timeoutInMilliseconds=60000
+</code></pre><h2 id="请求过滤"><a href="#请求过滤" class="headerlink" title="请求过滤"></a>请求过滤</h2><p>实现请求路由的基本功能后，微服务可以通过统一的API网关作为入口进行访问。但是访问权限等没有限制，任何请求都会被转发，最简单粗暴的是在所有微服务上添加一套权限逻辑，但是不可取。我们需要剥离，形成一个独立的鉴权服务。而Zuul的一个核心功能就是：请求过滤，只需要继承ZuulFilter抽象类并实现4个抽象函数即可完成请求的拦截与过滤。来看一个简单的Zuul过滤器<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">AccessFilter</span> <span class="keyword">extends</span> <span class="title">ZuulFilter</span></span>&#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> Logger log=LoggerFactory.getLogger(AccessFilter.class);</span><br><span class="line">    <span class="comment">//过滤器类型，决定过滤器在什么生命周期中执行，pre代表在请求路由之前进行。</span></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> String <span class="title">filterType</span><span class="params">()</span></span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="string">"pre"</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">//过滤器执行顺序</span></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">filterOrder</span><span class="params">()</span></span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">//过滤器是否要被执行，可以制定该函数的过滤器有效范围</span></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">shouldFilter</span><span class="params">()</span></span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">true</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">//过滤器逻辑类型，context.setSendZuulResponse(false)命令Zuul过滤该请求，</span></span><br><span class="line">    <span class="comment">//context.setResponseStatusCode(401)返回错误代码</span></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> Object <span class="title">run</span><span class="params">()</span></span>&#123;</span><br><span class="line">        RequestContext context = RequestContext.getCurrentContext();</span><br><span class="line">        HttpServletRequest requset = context.getRequset();</span><br><span class="line">        log.info(<span class="string">"send &#123;&#125; request to &#123;&#125;"</span>, requset.getMethod(), requset.getRequsetURL().toString());</span><br><span class="line"></span><br><span class="line">        Obeject accessToken = requset.getParamter(<span class="string">"accessToken"</span>);</span><br><span class="line">        <span class="keyword">if</span>(accessToken == <span class="keyword">null</span>)&#123;</span><br><span class="line">            log.warn(<span class="string">"token empty!!"</span>);</span><br><span class="line">            context.setSendZuulResponse(<span class="keyword">false</span>);</span><br><span class="line">            context.setResponseStatusCode(<span class="number">401</span>);</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        log.info(<span class="string">"access token ok!"</span>);</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>实现过滤器后，不会直接生效，需要创建具体的bean才能启动<br>在主类中增加如下方法才会生效<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Bean</span></span><br><span class="line"><span class="keyword">public</span> AccessFilter accessFilter（）&#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">new</span> AccessFilter();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>我们测试</p>
+<pre><code>http://localhost:5555/api-a/index
+http://localhost:5555/api-a/index&amp;accessToken=token
+</code></pre><h2 id="路由详解"><a href="#路由详解" class="headerlink" title="路由详解"></a>路由详解</h2><h3 id="路由的一些基本配置"><a href="#路由的一些基本配置" class="headerlink" title="路由的一些基本配置"></a>路由的一些基本配置</h3><p>回顾一下路由配置</p>
+<pre><code>zuul.routes.api-a-url.path=/api-a/**
+zuul.routes.api-a.serviceId=HELLO-SERVER
+zuul.routes.api-b-url.path=/api-b/**
+zuul.routes.api-b.serviceId=FEIGN-CONSUMER
+</code></pre><p>除了path与serviceId的映射外，还有更简洁的配置</p>
+<pre><code>#zuul.routes.&lt;serviceId&gt;=&lt;path&gt;
+zuul.routes.user-service=/user-service/**
+#将zuul看作eureka下的一个服务，他会获取所有实例清单，自己就得到了serviceID与服务实例地址的映射，api网关可自动找到最佳匹配
+</code></pre><p>虽然eureka与zuul省去了维护服务配置的工作，但是实际情况一般如下</p>
+<pre><code>zuul.routes.fegin-consumer.path=/fegin-consumer/**
+zuul.routes.fegin-consumer.serviceId=fegin-consumer
+</code></pre><p>zuul的默认规则可以完全不需要我们这样一个一个配置。<br>当我们为API网关引入eureka后，每个服务都会创建一个默认的路由规则，path使用serviceId配置的服务名作为请求前缀。<br>由于默认情况eureka的所有服务都会被zuul自动创建映射，而有些我们不希望暴露出去，可以用</p>
+<pre><code>zuul.ignore-serices=*
+zuul.routes.hello-server.serviceId=hello-server
+</code></pre><p>如上设置一个服务名匹配表达式来定义不自动映射，只需要添加我们想要暴露的服务hello-server，而fegin-consumer则不会暴露出去</p>
+<h3 id="自定义路由规则"><a href="#自定义路由规则" class="headerlink" title="自定义路由规则"></a>自定义路由规则</h3><p>构建微服务时，为了兼容不同外部版本，一般会采用开闭原则进行设计开发。我们可以根据服务版本表示来知道，如下<br>userservice-v1、userservice-v2、orderservice-v1、orderservice-v2 </p>
+<p>这样，路由默认会映射成/userservice-v1、/userservice-v2<br>但是这样不利于通过规则进行管理，可以改成如下这样</p>
+<pre><code>/v1/userservice
+//PatternServiceRouteMapper添加到主类下，通过正则表达式定义路由映射
+</code></pre><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Bean</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> PatternServiceRouteMapper <span class="title">serviceRouteMapper</span><span class="params">()</span></span>&#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">new</span> PatternServiceRouteMapper(</span><br><span class="line">        <span class="string">"(?&lt;name&gt;^.+)-(?&lt;version&gt;v.+$)"</span>,</span><br><span class="line">        <span class="string">"$&#123;version&#125;/$&#123;name&#125;"</span></span><br><span class="line">    );</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="路径匹配"><a href="#路径匹配" class="headerlink" title="路径匹配"></a>路径匹配</h3><p>可以通过如下来看</p>
+<pre><code>/user-service/?     匹配一个/user-service/a、/user-service/d、/user-service/3
+/user-service/*     匹配任意/user-service/afdsfs
+/user-service/**    匹配任意及多级目录 /user-service/afdsfs、/user-service/afdsfs/zz
+</code></pre><h2 id="Hystrix和Ribbon支持"><a href="#Hystrix和Ribbon支持" class="headerlink" title="Hystrix和Ribbon支持"></a>Hystrix和Ribbon支持</h2><p>Zuul的依赖包含了Hystrix和Ribbon的依赖，所以Zuul拥有线程隔离和断路器的自我保护功能，以及对服务调用的客户端负载均衡。<br>ps: 使用path与url的映射关系来配置路由规则的时候，路由转发的请求不会采用HystrixCommand包装，故不含有上述所说的Hystrix和Ribbon的特性，故尽量使用path和serviceId的组合来配置</p>
+<h2 id="Zuul过滤器！"><a href="#Zuul过滤器！" class="headerlink" title="Zuul过滤器！"></a>Zuul过滤器！</h2><p>zuul包含对请求路由及过滤两个功能，路由将外部请求转发到微服务实例，过滤将请求进行校验，实现请求校验服务聚合等功能</p>
+<p>spring cloud zuul包含4个基本特性实际上ZuulFilter中4个抽象方法：</p>
+<h3 id="过滤类型-String-filterType"><a href="#过滤类型-String-filterType" class="headerlink" title="过滤类型 String filterType()"></a>过滤类型 String filterType()</h3><p>需要返回一个字符串代表过滤器类型，Zuul默认了4个不同的生命周期过滤类型。</p>
+<pre><code>pre：路由请求前调用
+routing：请求时调用
+post：routing和error过滤器之后调用
+error：处理请求时发生错误被调用   
+</code></pre><p>filterType4种过滤器类型定义了一个外部HTTP到达API网关，直到返回请求结果的全部生命周期。可以通过下图清晰的看出来流转过程<br><img src="https://raw.githubusercontent.com/wiki/zhuifengcc/zhuifengcc.github.io/images/Spring Cloud/Spring Cloud Zuul/3-2.png" alt="过滤器流转图"></p>
+<p>这其中为了让API网关可以更方便使用，默认实现类一批核心的过滤器。定义在springcloud core下的netflix.zuul.filters。</p>
+<p><img src="https://raw.githubusercontent.com/wiki/zhuifengcc/zhuifengcc.github.io/images/Spring Cloud/Spring Cloud Zuul/3-3.png" alt="过滤器下包结构"></p>
+<h3 id="顺序执行-int-filterOrder"><a href="#顺序执行-int-filterOrder" class="headerlink" title="顺序执行 int filterOrder()"></a>顺序执行 int filterOrder()</h3><pre><code>用值越小优先级越高
+</code></pre><h3 id="执行条件-boolean-shouldFilter"><a href="#执行条件-boolean-shouldFilter" class="headerlink" title="执行条件 boolean shouldFilter()"></a>执行条件 boolean shouldFilter()</h3><pre><code>是否执行该过滤器
+</code></pre><h3 id="具体操作-Object-run"><a href="#具体操作-Object-run" class="headerlink" title="具体操作 Object run()"></a>具体操作 Object run()</h3><pre><code>自定义过滤逻辑，是否要拦截当前请求
+</code></pre><h3 id="过滤器生命周期表"><a href="#过滤器生命周期表" class="headerlink" title="过滤器生命周期表"></a>过滤器生命周期表</h3><p><img src="https://raw.githubusercontent.com/wiki/zhuifengcc/zhuifengcc.github.io/images/Spring Cloud/Spring Cloud Zuul/3-4.png" alt="过滤器生命周期表"></p>
+<h2 id="Zuul异常处理"><a href="#Zuul异常处理" class="headerlink" title="Zuul异常处理"></a>Zuul异常处理</h2><h3 id="error阶段直接抛出异常"><a href="#error阶段直接抛出异常" class="headerlink" title="error阶段直接抛出异常"></a>error阶段直接抛出异常</h3><p>可以看到，核心过滤器并没有实现error阶段，自己实现一个异常过滤器来看看怎么处理</p>
+<p>1.创建一个pre类型过滤器，在过滤器中抛出一个异常。在api-gateway服务中建立filter包<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Component</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ThrowExceptionFilter</span> <span class="keyword">extends</span> <span class="title">ZuulFilter</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> Logger log= LoggerFactory.getLogger(ThrowExceptionFilter.class);</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> String <span class="title">filterType</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="string">"pre"</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">filterOrder</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">shouldFilter</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">true</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> Object <span class="title">run</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        log.info(<span class="string">"pre filter, throw RuntimeException"</span>);</span><br><span class="line">        doSomething();</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">doSomething</span><span class="params">()</span></span>&#123;</span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> RuntimeException(<span class="string">"errors"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>我们运行注册中心、hello-server、api网关，利用<a href="http://localhost:5555/api-a/hello" target="_blank" rel="noopener">http://localhost:5555/api-a/hello</a> 访问，可以看到报错，api服务控制台输出了错误.</p>
+<pre><code>Whitelabel Error Page
+This application has no explicit mapping for /error, so you are seeing this as a fallback.
+
+Mon Apr 16 15:53:24 CST 2018
+There was an unexpected error (type=Internal Server Error, status=500).
+pre:ThrowExceptionFilter
+</code></pre><p>我们看一下RibbonRoutingFilter下的run如何抛出异常<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> Object <span class="title">run</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        RequestContext context = RequestContext.getCurrentContext();</span><br><span class="line">        <span class="keyword">this</span>.helper.addIgnoredHeaders(<span class="keyword">new</span> String[<span class="number">0</span>]);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            RibbonCommandContext commandContext = <span class="keyword">this</span>.buildCommandContext(context);</span><br><span class="line">            ClientHttpResponse response = <span class="keyword">this</span>.forward(commandContext);</span><br><span class="line">            <span class="keyword">this</span>.setResponse(response);</span><br><span class="line">            <span class="keyword">return</span> response;</span><br><span class="line">        &#125; <span class="keyword">catch</span> (ZuulException var4) &#123;</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> ZuulRuntimeException(var4);</span><br><span class="line">        &#125; <span class="keyword">catch</span> (Exception var5) &#123;</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> ZuulRuntimeException(var5);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure></p>
+<p>我们相应的改写下<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> Object <span class="title">run</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        log.info(<span class="string">"即将抛出错误"</span>);</span><br><span class="line">        <span class="keyword">try</span>&#123;</span><br><span class="line">            doSomething();</span><br><span class="line">        &#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> ZuulRuntimeException(e);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure></p>
+<p>可以看到</p>
+<pre><code>Whitelabel Error Page
+This application has no explicit mapping for /error, so you are seeing this as a fallback.
+
+Mon Apr 16 15:56:20 CST 2018
+There was an unexpected error (type=Internal Server Error, status=500).
+MY errors!!!!!!
+</code></pre><h3 id="禁用过滤器"><a href="#禁用过滤器" class="headerlink" title="禁用过滤器"></a>禁用过滤器</h3><p>无论是核心过滤器还是自定义的过滤器，只要在Api网关中创建了实例，那么默认情况都是启用状态的。如果不想使用了，该如何禁用过滤器</p>
+<p>1.可以重写sholdFliter逻辑返回false，但是这样会修改代码重新编译</p>
+<p>2.特定参数过滤</p>
+<pre><code>zuul.&lt;SimpleClassName&gt;.&lt;filterType&gt;.disable=true
+</code></pre><p>其中是过滤器名称过滤器类型。如</p>
+<pre><code>zuul.AccessFilter.pre.disable=true
+</code></pre><p>不仅可以过滤自定义的，核心过滤器也可以过滤。可以将Springcloud的过滤器全部抛弃并实现一套自己的过滤器处理机制。</p>
+<h2 id="Zuul动态加载路由及过滤器"><a href="#Zuul动态加载路由及过滤器" class="headerlink" title="Zuul动态加载路由及过滤器"></a>Zuul动态加载路由及过滤器</h2><p>API网关可是对外提供服务的入口，7X24小时服务系统，不可能重启及关闭应用，因此必须具备动态更新内部逻辑的能力，比如动态添加删除过滤器、动态修改路由规则</p>
+<h2 id="动态路由"><a href="#动态路由" class="headerlink" title="动态路由"></a>动态路由</h2><p>只需要利用config的动态刷新机制，从Git获取配置，轻松实现路由规则的动态刷新，</p>
+<p>启动eureka，启动配置中心config，config注册到eureka并从Git中获取配置，接下来需要Zuul网关，网关从config获取配置<br>1首先我们在Git上发布我们的配置api-gateway.properties</p>
+<pre><code>zuul.routes.service-a.path=/service-a/**
+zuul.routes.service-a.serviceId=hello-server
+zuul.routes.service-b.path=/service-b/**
+zuul.routes.service-b.url=http://www.baidu.com  
+</code></pre><p>2建立api-gateway-dynamic-route，从config-server中获取配置</p>
+<p>3pom中引入zuul、eureka、config依赖</p>
+<p>4bootstrap.properties配置</p>
+<pre><code>spring.application.name=api-gateway
+server.port=5556
+spring.cloud.config.uri=http://localhost:7001/
+eureka.client.serviceUrl.defaultZone=http://localhost:1111/eureka/
+</code></pre><p>5主类添加一个动态刷新RefreshScope<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@EnableZuulProxy</span></span><br><span class="line"><span class="meta">@SpringBootApplication</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ApiGatewayDynamicRouteApplication</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">        SpringApplication.run(ApiGatewayDynamicRouteApplication.class, args);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="meta">@RefreshScope</span></span><br><span class="line">    <span class="meta">@ConfigurationProperties</span>(<span class="string">"zuul"</span>)</span><br><span class="line">    <span class="function"><span class="keyword">public</span> ZuulProperties <span class="title">zuulProperties</span><span class="params">()</span></span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> ZuulProperties();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>6启动api-gateway 还有helloserver</p>
+<p>我们通过访问api-gateway<br><a href="http://localhost:5556/service-a/hello" target="_blank" rel="noopener">http://localhost:5556/service-a/hello</a> 跳转到了hello server的服务</p>
+<p><a href="http://localhost:5556/service-b" target="_blank" rel="noopener">http://localhost:5556/service-b</a> 跳转到了百度<br>路由实现</p>
+<h3 id="动态过滤器"><a href="#动态过滤器" class="headerlink" title="动态过滤器"></a>动态过滤器</h3><p>过滤请求的动态加载也可以通过类似的方式实现,但有所不同，路由规则是配置，请求过滤是编码实现。<br>所以对于请求过滤去的动态加载，需要借助基于JVM实现的动态语言才行，比如Groovy</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/08/02/Spring Cloud：Spring Cloud Feign/" rel="next" title="Spring Cloud: Spring Cloud Feign">
+                <i class="fa fa-chevron-left"></i> Spring Cloud: Spring Cloud Feign
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/08/17/Spring Cloud：Spring Cloud Config/" rel="prev" title="Spring Cloud: Spring Cloud Config">
+                Spring Cloud: Spring Cloud Config <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">zhuifengcc</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">13</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">2</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+
+          </nav>
+
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#Zuul网关"><span class="nav-number">1.</span> <span class="nav-text">Zuul网关</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#概要"><span class="nav-number">2.</span> <span class="nav-text">概要</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Quick-Start"><span class="nav-number">3.</span> <span class="nav-text">Quick Start</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#请求过滤"><span class="nav-number">4.</span> <span class="nav-text">请求过滤</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#路由详解"><span class="nav-number">5.</span> <span class="nav-text">路由详解</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#路由的一些基本配置"><span class="nav-number">5.1.</span> <span class="nav-text">路由的一些基本配置</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#自定义路由规则"><span class="nav-number">5.2.</span> <span class="nav-text">自定义路由规则</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#路径匹配"><span class="nav-number">5.3.</span> <span class="nav-text">路径匹配</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Hystrix和Ribbon支持"><span class="nav-number">6.</span> <span class="nav-text">Hystrix和Ribbon支持</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Zuul过滤器！"><span class="nav-number">7.</span> <span class="nav-text">Zuul过滤器！</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#过滤类型-String-filterType"><span class="nav-number">7.1.</span> <span class="nav-text">过滤类型 String filterType()</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#顺序执行-int-filterOrder"><span class="nav-number">7.2.</span> <span class="nav-text">顺序执行 int filterOrder()</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#执行条件-boolean-shouldFilter"><span class="nav-number">7.3.</span> <span class="nav-text">执行条件 boolean shouldFilter()</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#具体操作-Object-run"><span class="nav-number">7.4.</span> <span class="nav-text">具体操作 Object run()</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#过滤器生命周期表"><span class="nav-number">7.5.</span> <span class="nav-text">过滤器生命周期表</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Zuul异常处理"><span class="nav-number">8.</span> <span class="nav-text">Zuul异常处理</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#error阶段直接抛出异常"><span class="nav-number">8.1.</span> <span class="nav-text">error阶段直接抛出异常</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#禁用过滤器"><span class="nav-number">8.2.</span> <span class="nav-text">禁用过滤器</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Zuul动态加载路由及过滤器"><span class="nav-number">9.</span> <span class="nav-text">Zuul动态加载路由及过滤器</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#动态路由"><span class="nav-number">10.</span> <span class="nav-text">动态路由</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#动态过滤器"><span class="nav-number">10.1.</span> <span class="nav-text">动态过滤器</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">zhuifengcc</span>
+
+  
+</div>
+
+
+
+
+
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

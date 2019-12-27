@@ -1,0 +1,736 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="Hexo, NexT" />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="客户端负载均衡Spring Cloud Ribbon是一个基于HTTP和TCP的客户端负载均衡，他基于Netflix Ribbon实现。通过Spring Cloud的封装，可以轻松地将面向服务的REST模板请求自动转换成客户端负载均衡的服务调用。 我们都知道，负载均衡是对系统的高可用、网络压力的缓解和处理能力扩容的重要手段之一。传统的服务端负载均衡的模块（硬件设备或者是软件模块）都会为维护一个下挂">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Spring Cloud：Spring Cloud Ribbon">
+<meta property="og:url" content="http://yoursite.com/2018/06/18/Spring Cloud：Spring Cloud Ribbon/index.html">
+<meta property="og:site_name" content="沐奕">
+<meta property="og:description" content="客户端负载均衡Spring Cloud Ribbon是一个基于HTTP和TCP的客户端负载均衡，他基于Netflix Ribbon实现。通过Spring Cloud的封装，可以轻松地将面向服务的REST模板请求自动转换成客户端负载均衡的服务调用。 我们都知道，负载均衡是对系统的高可用、网络压力的缓解和处理能力扩容的重要手段之一。传统的服务端负载均衡的模块（硬件设备或者是软件模块）都会为维护一个下挂">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2018-10-14T08:28:05.686Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Spring Cloud：Spring Cloud Ribbon">
+<meta name="twitter:description" content="客户端负载均衡Spring Cloud Ribbon是一个基于HTTP和TCP的客户端负载均衡，他基于Netflix Ribbon实现。通过Spring Cloud的封装，可以轻松地将面向服务的REST模板请求自动转换成客户端负载均衡的服务调用。 我们都知道，负载均衡是对系统的高可用、网络压力的缓解和处理能力扩容的重要手段之一。传统的服务端负载均衡的模块（硬件设备或者是软件模块）都会为维护一个下挂">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2018/06/18/Spring Cloud：Spring Cloud Ribbon/"/>
+
+
+
+
+
+  <title>Spring Cloud：Spring Cloud Ribbon | 沐奕</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">沐奕</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/06/18/Spring Cloud：Spring Cloud Ribbon/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="zhuifengcc">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="沐奕">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Spring Cloud：Spring Cloud Ribbon</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-06-18T12:54:39+08:00">
+                2018-06-18
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Spring-Cloud/" itemprop="url" rel="index">
+                    <span itemprop="name">Spring Cloud</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h2 id="客户端负载均衡"><a href="#客户端负载均衡" class="headerlink" title="客户端负载均衡"></a>客户端负载均衡</h2><p>Spring Cloud Ribbon是一个基于HTTP和TCP的客户端负载均衡，他基于Netflix Ribbon实现。通过Spring Cloud的封装，可以轻松地将面向服务的REST模板请求自动转换成客户端负载均衡的服务调用。</p>
+<p>我们都知道，负载均衡是对系统的高可用、网络压力的缓解和处理能力扩容的重要手段之一。传统的服务端负载均衡的模块（硬件设备或者是软件模块）都会为维护一个下挂可用的服务端清单，通过心跳检测来剔除故障的服务端节点，当客户端发送请求到负载均衡设备的时候，该设备按某种算法（线性轮询、按权重负载、按流量负载等）从维护的服务端清单中取出一台服务端的地址，然后进行转发。</p>
+<p>客户端负载均衡和服务端负载均衡最大的不同在于服务清单所存储的位置。在客户端负载均衡中，所有客户端节点都维护着自己要访问的服务端清单，而这些服务端清单来自服务注册中心，在客户端负载均衡中也需要心跳去维护服务端清单的健康性，只是这个步骤需要与服务注册中心配合完成。</p>
+<p>如何实现客户端负载均衡？</p>
+<pre><code>· 服务注册者只需要启动多个服务实例并注册到一个注册中心或是多个相关联的服务注册中心。
+· 服务消费者直接通过调用被@LoadBalanced注解修饰过的RestTemple来实现面向服务的接口调用。
+</code></pre><h2 id="RestTemple不同请求类型调用实现"><a href="#RestTemple不同请求类型调用实现" class="headerlink" title="RestTemple不同请求类型调用实现"></a>RestTemple不同请求类型调用实现</h2><h3 id="GET请求"><a href="#GET请求" class="headerlink" title="GET请求"></a>GET请求</h3><p>可通过两个方法进行调用实现</p>
+<p>1、getForEntity(返回ResponseEntity对象，是Spring对HTTP请求响应的封装)</p>
+<p>提供3个重载，具体可查询相关文档</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">RestTemplate restTemplate = <span class="keyword">new</span> RestTemplate();</span><br><span class="line">ResponseEntity&lt;String&gt; responseEntity = restTemplate.getForEntity(<span class="string">"http://USER_SERVICE/user?name=&#123;1&#125;"</span>, String.class, <span class="string">"zhuifengcc"</span>)</span><br><span class="line">String body = responseEntity.getBody();</span><br><span class="line"></span><br><span class="line"><span class="comment">// 对象User</span></span><br><span class="line">RestTemplate restTemplate = <span class="keyword">new</span> RestTemplate();</span><br><span class="line">ResponseEntity&lt;User&gt; responseEntity = restTemplate.getForEntity(<span class="string">"http://USER_SERVICE/user?name=&#123;1&#125;"</span>, User.class, <span class="string">"zhuifengcc"</span>)</span><br><span class="line">User userBody = responseEntity.getBody();</span><br></pre></td></tr></table></figure>
+<p>2、getForObject(对getForEntity的进一步封装，通过HttpMessageConvererExtractor对HTTP的请求响应体body内容进行对象转换，实现请求直接返回包装好的对象内容)</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">RestTemplate restTemplate = <span class="keyword">new</span> RestTemplate();</span><br><span class="line">String result = restTemplate.getForObject(uri, String.class);</span><br><span class="line"></span><br><span class="line"><span class="comment">// body是一个对象时</span></span><br><span class="line">RestTemplate restTemplate = <span class="keyword">new</span> RestTemplate();</span><br><span class="line">User result = restTemplate.getForObject(uri, User.class);</span><br></pre></td></tr></table></figure>
+<h3 id="POST请求"><a href="#POST请求" class="headerlink" title="POST请求"></a>POST请求</h3><p>可通过三个方法进行调用实现</p>
+<p>1、getForEntity</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">RestTemplate restTemplate = <span class="keyword">new</span> RestTemplate();</span><br><span class="line">User user = <span class="keyword">new</span> User(<span class="string">"zhuifengcc"</span>, <span class="number">24</span>);</span><br><span class="line"><span class="comment">// 提交的请求body是user对象，返回的响应body类型是String</span></span><br><span class="line">ResponseEntity&lt;User&gt; responseEntity = restTemplate.getForEntity(<span class="string">"http://USER_SERVICE/user"</span>, user, String.class)</span><br><span class="line">String body = responseEntity.getBody();</span><br></pre></td></tr></table></figure>
+<p>2、getForObject</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">RestTemplate restTemplate = <span class="keyword">new</span> RestTemplate();</span><br><span class="line">User user = <span class="keyword">new</span> User(<span class="string">"zhuifengcc"</span>, <span class="number">24</span>);</span><br><span class="line">String postResult = restTemplate.getForObject(<span class="string">"http://USER_SERVICE/user"</span>, user, String.class)</span><br></pre></td></tr></table></figure>
+<p>这两者可同GET请求的发放进行类比</p>
+<p>3、postForLocation(实现了以POST请求提交资源，并返回新资源的URI)</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">User user = <span class="keyword">new</span> User(<span class="string">"zhuifengcc"</span>, <span class="number">24</span>);</span><br><span class="line">URI responseURI = restTemplate.postForLocation(<span class="string">"http://USER_SERVICE/user"</span>, user, String.class)</span><br></pre></td></tr></table></figure>
+<p>由于返回新资源的URI，就相当于指定了返回类型。</p>
+<h3 id="PUT请求"><a href="#PUT请求" class="headerlink" title="PUT请求"></a>PUT请求</h3><p>可通过PUT方法进行调用实现</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">RestTemplate restTemplate = <span class="keyword">new</span> RestTemplate();</span><br><span class="line"><span class="keyword">long</span> id = <span class="number">1001L</span>;</span><br><span class="line">User user = <span class="keyword">new</span> User(<span class="string">"zhuifengcc"</span>, <span class="number">24</span>);</span><br><span class="line">restTemplate.put(<span class="string">"http://USER_SERVICE/user/&#123;1&#125;"</span>, user, id);</span><br></pre></td></tr></table></figure>
+<h3 id="DELETE请求"><a href="#DELETE请求" class="headerlink" title="DELETE请求"></a>DELETE请求</h3><p>可通过DELETE方法进行调用实现</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">RestTemplate restTemplate = <span class="keyword">new</span> RestTemplate();</span><br><span class="line"><span class="keyword">long</span> id = <span class="number">1001L</span>;</span><br><span class="line">restTemplate.delete(<span class="string">"http://USER_SERVICE/user/&#123;1&#125;"</span>, id);</span><br></pre></td></tr></table></figure>
+<h2 id="Ribbon配置"><a href="#Ribbon配置" class="headerlink" title="Ribbon配置"></a>Ribbon配置</h2><p>Ribbon中定义的每一个接口都有多种不同的策略实现，同时这些接口之间又有一定的依赖关系，是的上手困难，不知道如何选择具体的实现策略及如何组织他们的关系，Spring Cloud Ribbon采用了自动化配置，引入Spring Cloud Ribbon的依赖之后，就能自动化构建这些接口的实现。</p>
+<p>通过自动化配置的实现，可以轻松实现客户端负载均衡。同时，针对一些个性化需求，我们也可以方便地替换默认实现，只需在Spring Boot应用中创建对应的实现实例就能覆盖这些默认的实现。</p>
+<h2 id="重试机制"><a href="#重试机制" class="headerlink" title="重试机制"></a>重试机制</h2><p>集成Spring Eureka时，由于Spring Eureka实现了CAP原理中的AP（满足可用性，分区容错性（可靠性），弱一致性），与Zookeeper实现CP（强一致性，可靠性）不同，Eureka为了实现更高的服务可用性，在极端情况下宁愿接受故障实例也不要丢掉”健康”实例。当服务注册中心故障时，Eureka在超过85%的实例丢失心跳时触发保护机制，注册中心将会保留此时所有节点，以实现服务间依然可以进行互相调用的场景，即使其中有部分故障节点，但是也可以继续保障大多数服务正常消费。</p>
+<p>当触发了保护机制或者是服务剔除的延迟，引起服务调用到故障实例的时候，我们还是希望增强这类问题的容错，所以加入一些重试机制。Spring Cloud整合了Spring Retry来增强RestTemple的重试能力</p>
+<pre><code>#开启重试机制
+spring.cloud.loadbanlancer.retry.enabled=true
+#断路器超时时间（需要大于Ribbon超时时间不然不会触发重试）
+hystrix.command.default.execution.isolation.thread.timeoutInMilliseconds=10000
+#请求连接的超时时间
+hello-service.ribbon.ConnectTimeout=250
+#请求处理的超时时间。
+hello-service.ribbon.ReadTimeout=1000
+#对所有操作请求都进行重试。
+hello-service.ribbon.OkToRetryOnAllOperations=true
+#切换实例的重试次数。
+hello-service.ribbon.MaxAutoRetriesNextServer=2
+#对当前实例的重试次数。
+hello-service.ribbon.MaxAutoRetries=1
+</code></pre>
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/06/05/NoSQL：Redis入门介绍/" rel="next" title="NoSQL：Redis入门介绍">
+                <i class="fa fa-chevron-left"></i> NoSQL：Redis入门介绍
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/06/21/NoSQL：Redis基础及常用数据类型/" rel="prev" title="NoSQL:Redis基础及常用数据类型">
+                NoSQL:Redis基础及常用数据类型 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">zhuifengcc</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">13</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">2</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+
+          </nav>
+
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#客户端负载均衡"><span class="nav-number">1.</span> <span class="nav-text">客户端负载均衡</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#RestTemple不同请求类型调用实现"><span class="nav-number">2.</span> <span class="nav-text">RestTemple不同请求类型调用实现</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#GET请求"><span class="nav-number">2.1.</span> <span class="nav-text">GET请求</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#POST请求"><span class="nav-number">2.2.</span> <span class="nav-text">POST请求</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#PUT请求"><span class="nav-number">2.3.</span> <span class="nav-text">PUT请求</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#DELETE请求"><span class="nav-number">2.4.</span> <span class="nav-text">DELETE请求</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Ribbon配置"><span class="nav-number">3.</span> <span class="nav-text">Ribbon配置</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#重试机制"><span class="nav-number">4.</span> <span class="nav-text">重试机制</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">zhuifengcc</span>
+
+  
+</div>
+
+
+
+
+
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

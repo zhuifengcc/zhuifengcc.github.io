@@ -1,0 +1,722 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="Hexo, NexT" />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="随着微服务业务壮大，各种服务调用非常复杂，几乎每一个前端请求都会形成一条负载的分布式服务调用链路，途中任何一个服务失败都可能造成最后失败，所以整个链路追踪非常重要。Sleuth则时这样一个人分布式服务最终的解决方法。 Quick Start首先我们先搭建一个环境，需要的服务有：eureka-server微服务1，实现一个/trace-1接口，调用这个接口将触发对trace-2应用的调用pom引入r">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Spring Cloud: Spring Cloud Sleuth">
+<meta property="og:url" content="http://yoursite.com/2018/09/02/Spring Cloud：Spring Cloud Sleuth/index.html">
+<meta property="og:site_name" content="沐奕">
+<meta property="og:description" content="随着微服务业务壮大，各种服务调用非常复杂，几乎每一个前端请求都会形成一条负载的分布式服务调用链路，途中任何一个服务失败都可能造成最后失败，所以整个链路追踪非常重要。Sleuth则时这样一个人分布式服务最终的解决方法。 Quick Start首先我们先搭建一个环境，需要的服务有：eureka-server微服务1，实现一个/trace-1接口，调用这个接口将触发对trace-2应用的调用pom引入r">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="https://raw.githubusercontent.com/wiki/zhuifengcc/zhuifengcc.github.io/images/Spring Cloud/Spring Cloud Sleuth/7-1.png">
+<meta property="og:updated_time" content="2018-10-14T08:28:05.687Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Spring Cloud: Spring Cloud Sleuth">
+<meta name="twitter:description" content="随着微服务业务壮大，各种服务调用非常复杂，几乎每一个前端请求都会形成一条负载的分布式服务调用链路，途中任何一个服务失败都可能造成最后失败，所以整个链路追踪非常重要。Sleuth则时这样一个人分布式服务最终的解决方法。 Quick Start首先我们先搭建一个环境，需要的服务有：eureka-server微服务1，实现一个/trace-1接口，调用这个接口将触发对trace-2应用的调用pom引入r">
+<meta name="twitter:image" content="https://raw.githubusercontent.com/wiki/zhuifengcc/zhuifengcc.github.io/images/Spring Cloud/Spring Cloud Sleuth/7-1.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2018/09/02/Spring Cloud：Spring Cloud Sleuth/"/>
+
+
+
+
+
+  <title>Spring Cloud: Spring Cloud Sleuth | 沐奕</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">沐奕</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/09/02/Spring Cloud：Spring Cloud Sleuth/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="zhuifengcc">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="沐奕">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Spring Cloud: Spring Cloud Sleuth</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-09-02T00:07:02+08:00">
+                2018-09-02
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Spring-Cloud/" itemprop="url" rel="index">
+                    <span itemprop="name">Spring Cloud</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>随着微服务业务壮大，各种服务调用非常复杂，几乎每一个前端请求都会形成一条负载的分布式服务调用链路，途中任何一个服务失败都可能造成最后失败，所以整个链路追踪非常重要。Sleuth则时这样一个人分布式服务最终的解决方法。</p>
+<h2 id="Quick-Start"><a href="#Quick-Start" class="headerlink" title="Quick Start"></a>Quick Start</h2><p>首先我们先搭建一个环境，需要的服务有：<br>eureka-server<br>微服务1，实现一个/trace-1接口，调用这个接口将触发对trace-2应用的调用<br>pom引入ribbon、web、eureka、sleuth<br><figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"> &lt;dependency&gt;</span><br><span class="line">    &lt;groupId&gt;org.springframework.cloud&lt;/groupId&gt;</span><br><span class="line">    &lt;artifactId&gt;spring-cloud-starter-sleuth&lt;/artifactId&gt;</span><br><span class="line">&lt;/dependency&gt;</span><br></pre></td></tr></table></figure></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@RestController</span></span><br><span class="line"><span class="meta">@EnableDiscoveryClient</span></span><br><span class="line"><span class="meta">@SpringBootApplication</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">SleuthApplication</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> Logger logger = LoggerFactory.getLogger(SleuthApplication.class);</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">        SpringApplication.run(SleuthApplication.class, args);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="meta">@Bean</span></span><br><span class="line">    <span class="meta">@LoadBalanced</span></span><br><span class="line">    <span class="function">RestTemplate <span class="title">restTemplate</span><span class="params">()</span></span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> RestTemplate();</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="meta">@RequestMapping</span>(value = <span class="string">"/trace-1"</span>, method = RequestMethod.GET)</span><br><span class="line">    <span class="function"><span class="keyword">public</span> String <span class="title">trace</span><span class="params">()</span></span>&#123;</span><br><span class="line">        logger.info(<span class="string">"------call trace1--------------"</span>);</span><br><span class="line">        <span class="keyword">return</span> restTemplate().getForEntity(<span class="string">"http://trace2/trace-2"</span>,String.class).getBody();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>配置<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">spring.application.name=trace1</span><br><span class="line">server.port=<span class="number">9101</span></span><br><span class="line">eureka.client.serviceUrl.defaultZone=http:<span class="comment">//localhost:1111/eureka</span></span><br></pre></td></tr></table></figure></p>
+<p>微服务2<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@RestController</span></span><br><span class="line"><span class="meta">@EnableDiscoveryClient</span></span><br><span class="line"><span class="meta">@SpringBootApplication</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Sleuth2Application</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> Logger logger = LoggerFactory.getLogger(Sleuth2Application.class);</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">        SpringApplication.run(Sleuth2Application.class, args);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="meta">@RequestMapping</span>(value = <span class="string">"/trace-2"</span>, method = RequestMethod.GET)</span><br><span class="line">    <span class="function"><span class="keyword">public</span> String <span class="title">trace</span><span class="params">()</span></span>&#123;</span><br><span class="line">        logger.info(<span class="string">"------call trace2--------------"</span>);</span><br><span class="line">        <span class="keyword">return</span> <span class="string">"Traced"</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>我们启动，访问trace-1.可以看到控制台info的消息<br>INFO [trace1,e6032bd804035fe4,e6032bd804035fe4,false] 19800 — [nio-9101-exec-1] com.cg.sleuth.SleuthApplication : ——call trace1————–</p>
+<p>INFO [trace2,e6032bd804035fe4,7af75df6c4f9693c,false] 11272 — [nio-9102-exec-1] com.cg.sleuth2.Sleuth2Application : ——call trace2————–</p>
+<p>上述info种trace1为应用名，第二个值为Sleuth生成的ID(Trace ID)，标记请求链路，第三个值为sleuth生成的另一个id(Span ID)，表示一个基本的工作单元，比如发送一个HTTP请求，false表示是否输出到ziplin收集展示</p>
+<h2 id="跟踪原理"><a href="#跟踪原理" class="headerlink" title="跟踪原理"></a>跟踪原理</h2><p>请求发送到分布式系统入口端点时，sleuth为该请求创建一个唯一标识，分布式系统内部流转时，始终传递该唯一表示，直到返回给请求方。通过traceID，可以将请求过程的日志关联起来<br>为了统计各个单元处理时间延迟，当请求到达服务时，通过唯一标识(SpanID)来标记他的开始及结束。<br>引入sleuth后，可以自动为当前应用构建起各种通信通道的最终机制：如rabbitMQ传递请求、zuul代理传递请求、restTemplate请求</p>
+<p>上述示例通过restTemplate实现，sleuth会对该请求追踪</p>
+<h2 id="抽样收集"><a href="#抽样收集" class="headerlink" title="抽样收集"></a>抽样收集</h2><p>追踪通过trace ID和span ID实现了，但是分布式系统加入对所有进行追踪，将产生海量日志数据，对性能造成影响，日志储存开销也很大。之前的第四个值就是用来代表该信息是否要被后续的跟踪信息收集器获取和储存。<br>sleuth通过Sampler接口实现<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">Sampler</span></span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">boolean</span> <span class="title">isSampled</span><span class="params">(Span span)</span></span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>通过该接口，sleuth会再产生跟踪信息的时候生成是否要被收集的标志。<br>默认情况下，sleuth会使用PercentageBasedSampler来实现抽样策略，可以在applicatino.properties中配置，默认10%收集</p>
+<pre><code>spring.sleuth.sampler.percentage=0.1
+</code></pre><p>不过开发测试阶段一般设置为1</p>
+<h2 id="Logstash整合"><a href="#Logstash整合" class="headerlink" title="Logstash整合"></a>Logstash整合</h2><p>之前实现了通过日志添加跟踪信息的功能，但是，在海量的日志文件中去排查分析是基本不可能的。<br>一般的日志分析平台有ELK，可以轻松搜索出我们想要的明细日志。<br>ELK 平台由ElesticSearch、Logstash、Kibana组成</p>
+<pre><code>ElesticSearch:开源分布式搜索引擎。分布式、零配置，自动发现。。。
+Logstash：对日志进行收集过滤，并将其储存
+Kibana ： 结合上面两个，提供日志分析web界面
+</code></pre><p> spring cloud 与ELK整合时候，只需要和Logstash对接数据即可，为Logstaash提供json格式的日志输出。</p>
+<h2 id="整合过程"><a href="#整合过程" class="headerlink" title="整合过程"></a>整合过程</h2><p>1.pom引入logstash-logback-encoder依赖<br><figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"> &lt;dependency&gt;</span><br><span class="line">    &lt;groupId&gt;net.logstash.logback&lt;/groupId&gt;</span><br><span class="line">    &lt;artifactId&gt;logstash-logback-encoder&lt;/artifactId&gt;</span><br><span class="line">    &lt;version&gt;4.6&lt;/version&gt;</span><br><span class="line">&lt;/dependency&gt;</span><br></pre></td></tr></table></figure></p>
+<p>2./resource下创建bootstrap.properties配置文件，将spring.application.name=trace-1配置移动到该文件里，因为logback-spring.xml在application.properties之前加载</p>
+<p>3./resource下创建logback-spring.xml.<br><figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br></pre></td><td class="code"><pre><span class="line">&lt;?xml version=<span class="string">"1.0"</span> encoding=<span class="string">"UTF-8"</span>?&gt;</span><br><span class="line">&lt;configuration&gt;</span><br><span class="line">    &lt;include resource=<span class="string">"org/springframework/boot/logging/logback/defaults.xml"</span>/&gt;</span><br><span class="line">    &lt;springProperty scope=<span class="string">"context"</span> name=<span class="string">"springAppName"</span> source=<span class="string">"spring.application.name"</span>/&gt;</span><br><span class="line">    &lt;!-- 日志在工程中的输出位置 --&gt;</span><br><span class="line">    &lt;property name=<span class="string">"LOG_FILE"</span> value=<span class="string">"$&#123;BUILD_FOLDER:-build&#125;/$&#123;springAppName&#125;"</span>/&gt;</span><br><span class="line">    &lt;!-- 控制台的日志输出样式 --&gt;</span><br><span class="line">    &lt;property name=<span class="string">"CONSOLE_LOG_PATTERN"</span></span><br><span class="line">            value=<span class="string">"%clr(%d&#123;yyyy-MM-dd HH:mm:ss.SSS&#125;)&#123;faint&#125; %clr($&#123;LOG_LEVEL_PATTERN:-%5p&#125;) %clr([$&#123;springAppName:-&#125;,%X&#123;X-B3-TraceId:-&#125;,%X&#123;X-B3-SpanId:-&#125;,%X&#123;X-Span-Export:-&#125;])&#123;yellow&#125; %clr($&#123;PID:- &#125;)&#123;magenta&#125; %clr(---)&#123;faint&#125; %clr([%15.15t])&#123;faint&#125; %clr(%-40.40logger&#123;39&#125;)&#123;cyan&#125; %clr(:)&#123;faint&#125; %m%n$&#123;LOG_EXCEPTION_CONVERSION_WORD:-%wEx&#125;"</span>/&gt;</span><br><span class="line">    &lt;!-- 控制台Appender --&gt;</span><br><span class="line">    &lt;appender name=<span class="string">"console"</span> <span class="class"><span class="keyword">class</span></span>=<span class="string">"ch.qos.logback.core.ConsoleAppender"</span>&gt;</span><br><span class="line">        &lt;filter <span class="class"><span class="keyword">class</span></span>=<span class="string">"ch.qos.logback.classic.filter.ThresholdFilter"</span>&gt;</span><br><span class="line">            &lt;level&gt;INFO&lt;/level&gt;</span><br><span class="line">        &lt;/filter&gt;</span><br><span class="line">        &lt;encoder&gt;</span><br><span class="line">            &lt;pattern&gt;$&#123;CONSOLE_LOG_PATTERN&#125;&lt;/pattern&gt;</span><br><span class="line">            &lt;charset&gt;utf8&lt;/charset&gt;</span><br><span class="line">    &lt;/encoder&gt;</span><br><span class="line">    &lt;/appender&gt;</span><br><span class="line"></span><br><span class="line">    &lt;!-- 为logstash输出的json格式的Appender --&gt;</span><br><span class="line">    &lt;appender name=<span class="string">"logstash"</span> <span class="class"><span class="keyword">class</span></span>=<span class="string">"ch.qos.logback.core.rolling.RollingFileAppender"</span>&gt;</span><br><span class="line">        &lt;file&gt;$&#123;LOG_FILE&#125;.json&lt;/file&gt;</span><br><span class="line">        &lt;rollingPolicy <span class="class"><span class="keyword">class</span></span>=<span class="string">"ch.qos.logback.core.rolling.TimeBasedRollingPolicy"</span>&gt;</span><br><span class="line">            &lt;fileNamePattern&gt;$&#123;LOG_FILE&#125;.json.%d&#123;yyyy-MM-dd&#125;.gz&lt;/fileNamePattern&gt;</span><br><span class="line">            &lt;maxHistory&gt;7&lt;/maxHistory&gt;</span><br><span class="line">        &lt;/rollingPolicy&gt;</span><br><span class="line">        &lt;encoder <span class="class"><span class="keyword">class</span></span>=<span class="string">"net.logstash.logback.encoder.LoggingEventCompositeJsonEncoder"</span>&gt;</span><br><span class="line">            &lt;providers&gt;</span><br><span class="line">                &lt;timestamp&gt;</span><br><span class="line">                    &lt;timeZone&gt;UTC&lt;/timeZone&gt;</span><br><span class="line">                &lt;/timestamp&gt;</span><br><span class="line">                &lt;pattern&gt;</span><br><span class="line">                    &lt;pattern&gt;</span><br><span class="line">                        &#123;</span><br><span class="line">                        <span class="string">"severity"</span>: <span class="string">"%level"</span>,</span><br><span class="line">                        <span class="string">"service"</span>: <span class="string">"$&#123;springAppName:-&#125;"</span>,</span><br><span class="line">                        <span class="string">"trace"</span>: <span class="string">"%X&#123;X-B3-TraceId:-&#125;"</span>,</span><br><span class="line">                        <span class="string">"span"</span>: <span class="string">"%X&#123;X-B3-SpanId:-&#125;"</span>,</span><br><span class="line">                        <span class="string">"exportable"</span>: <span class="string">"%X&#123;X-Span-Export:-&#125;"</span>,</span><br><span class="line">                        <span class="string">"pid"</span>: <span class="string">"$&#123;PID:-&#125;"</span>,</span><br><span class="line">                        <span class="string">"thread"</span>: <span class="string">"%thread"</span>,</span><br><span class="line">                        <span class="string">"class"</span>: <span class="string">"%logger&#123;40&#125;"</span>,</span><br><span class="line">                        <span class="string">"rest"</span>: <span class="string">"%message"</span></span><br><span class="line">                        &#125;</span><br><span class="line">                    &lt;/pattern&gt;</span><br><span class="line">                &lt;/pattern&gt;</span><br><span class="line">            &lt;/providers&gt;</span><br><span class="line">        &lt;/encoder&gt;</span><br><span class="line">    &lt;/appender&gt;</span><br><span class="line">    &lt;root level=<span class="string">"INFO"</span>&gt;</span><br><span class="line">        &lt;appender-ref ref=<span class="string">"console"</span>/&gt;</span><br><span class="line">        &lt;appender-ref ref=<span class="string">"logstash"</span>/&gt;</span><br><span class="line">    &lt;/root&gt;</span><br><span class="line">&lt;/configuration&gt;</span><br></pre></td></tr></table></figure></p>
+<p>启动完成，访问/trace-1接口，可以看到工程目录下的build文件夹下的json记录</p>
+<h2 id="Zipkin整合"><a href="#Zipkin整合" class="headerlink" title="Zipkin整合"></a>Zipkin整合</h2><p>ELK缺少对请求链路中各个阶段时间延迟的关注，使用zipkin可以解决。<br>zippkin基于google Dapper，可以使用它来收集各个服务器上请求链路的跟踪数据，并通过它提供的REST API接口来辅助对分布式系统的监控程序。</p>
+<p><img src="https://raw.githubusercontent.com/wiki/zhuifengcc/zhuifengcc.github.io/images/Spring Cloud/Spring Cloud Sleuth/7-1.png" alt="架构图"></p>
+<p>Collector：收集器组件，处理从外部系统发送过来的跟踪信息，转换为Zipkin内部处理的Span格式<br>Storage：存储组件，它主要对处理收集器接收到的跟踪信息，默认会将这些信息存储在内存中，也可以使用其他存储组件将跟踪信息存储到数据库中。<br>RESTful API：API组件，它主要用来提供外部访问接口。比如给客户端展示跟踪信息，或是外接系统访问以实现监控等。<br>Web UI：UI组件，基于API组件实现的上层应用。用户可以方便而有直观地查询和分析跟踪信息。</p>
+<h2 id="整合流程"><a href="#整合流程" class="headerlink" title="整合流程"></a>整合流程</h2><p>1） 直接下载zipkin jar 直接启动，是一个spring boot 应用<br>2） trace-1 trace-2添加spring-cloud-sleuth-zipkin依赖<br>3） 在application.properties中增加zipkinserver配置信息</p>
+<pre><code>spring.zipkin.base-url=http://localhost:9411
+</code></pre><p>可以在zipkin页面看到 <a href="http://localhost:9411" target="_blank" rel="noopener">http://localhost:9411</a></p>
+<h2 id="整合消息中间件，收集消息，ELK处理储存Hbase；或者流计算，实时呈现"><a href="#整合消息中间件，收集消息，ELK处理储存Hbase；或者流计算，实时呈现" class="headerlink" title="整合消息中间件，收集消息，ELK处理储存Hbase；或者流计算，实时呈现"></a>整合消息中间件，收集消息，ELK处理储存Hbase；或者流计算，实时呈现</h2><p>就是这一套技术。<br>1）<br>trace-1 trace-2添加spring-cloud-sleuth-stream<br>application.properties去除zipkin url参数，并配置rabbitmq信息<br>2）<br>zipkin-server 引入zipkin-stream依赖，</p>
+<p>最后，我们使用之前的验证方法，通过向trace-1的接口发送几个请求：<a href="http://localhost:9101/trace-1" target="_blank" rel="noopener">http://localhost:9101/trace-1</a> ,当有被抽样收集的跟踪信息时（调试时我们可以设置AlwaysSampler抽样机制来让每个跟踪信息都被收集），我们可以在RabbitMQ的控制页面中发现有消息被发送到了sleuth交换器中，同时我们再到zipkin服务端的Web页面中也能够搜索到相应的跟踪信息，那么我们使用消息中间件来收集跟踪信息的任务到这里就完成了。</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/08/22/Spring Cloud：Spring Cloud Stream/" rel="next" title="Spring Cloud: Spring Cloud Stream">
+                <i class="fa fa-chevron-left"></i> Spring Cloud: Spring Cloud Stream
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">zhuifengcc</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">13</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">2</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+
+          </nav>
+
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#Quick-Start"><span class="nav-number">1.</span> <span class="nav-text">Quick Start</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#跟踪原理"><span class="nav-number">2.</span> <span class="nav-text">跟踪原理</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#抽样收集"><span class="nav-number">3.</span> <span class="nav-text">抽样收集</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Logstash整合"><span class="nav-number">4.</span> <span class="nav-text">Logstash整合</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#整合过程"><span class="nav-number">5.</span> <span class="nav-text">整合过程</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Zipkin整合"><span class="nav-number">6.</span> <span class="nav-text">Zipkin整合</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#整合流程"><span class="nav-number">7.</span> <span class="nav-text">整合流程</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#整合消息中间件，收集消息，ELK处理储存Hbase；或者流计算，实时呈现"><span class="nav-number">8.</span> <span class="nav-text">整合消息中间件，收集消息，ELK处理储存Hbase；或者流计算，实时呈现</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">zhuifengcc</span>
+
+  
+</div>
+
+
+
+
+
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
