@@ -180,3 +180,48 @@ Redis：REmote DIctionary Server（远程字典服务器），是一个高性能
       requirepass 123
     16.设置同一时间最大客户端连接数，默认无限制，Redis可以同时打开的客户端连接数为Redis进程可以打开的最大文件描述符数，如果设置maxclients 0，表示不作限制。当客户端连接数达到限制时，Redis会关闭新的连接并向客户返回 max number of clients reached错误信息
       maxclients 128
+    17.指定Redis最大内存限制，Redis在启动时会把数据加载到内存中，达到最大内存后，Redis会先尝试清除已到期或即将到期的key，当此方法处理后，仍然到达最大内存设置，将无法再进行写入操作，但仍然可以进行读取操作。Redis新的vm机制，会把key存放内存，Value会存放在swap区
+      maxmemory <bytes>
+    18.指定是否在每次更新后进行日志记录，Redis在默认情况下是异步的把数据写入磁盘，如果不开启，可能会在断电时导致一段时间内的数据丢失。因为Redis本身同步数据文件时按上面save条件来同步的，所以有的数据会在一段时间只存在与内存中，默认为no
+      appendonly no
+    19.指定更新日志文件名，默认为appendonly.aof
+      appendfilename appendonly.aof
+    20.指定日志更新条件，共有3个可选值：
+      no: 表示等操作系统进行数据缓存同步到磁盘（快）
+      always: 表示每次更新操作后手动调用fsync()将数据写到磁盘（慢，安全）
+      everysec: 表示每秒同步一次（折中，默认值）
+      appendfsync everysec
+    21.指定是否启用虚拟内存机制，默认值为no，简单的介绍一下，VM机制将数据分页存放，由Redis将访问量较少的页即冷数据swap到磁盘上，访问多的页面由磁盘自动换出到内存中
+      vm-enabled no
+    22.虚拟内存文件路径，默认值为/tmp/redis.swap，不可多个Redis实例共享
+      vm-swap-file /tmp/redis.swap
+    23.将所有大于vm-max-memory的数据存入虚拟内存，无论vm-max-memory设置多小，所有索引数据都是内存存储的（Redis的索引数据， 就是keys）。也就是说，当vm-max-memory设置为0的时候，其实是所有value都存在与磁盘。默认值为0
+      vm-max-memory 0
+    24.Redis swap文件分成了挺多的page，一个对象可以保存在多个page上面，但一个page上不能被多个对象共享，vm-page-size是要根据存储的数据大小来设定的，建议如果存储很多小对象，page大小最好设置为32或者64bytes；如果存储很大大对象，则可以使用更大的page，如果不确定，就使用默认值
+      vm-page-size 32
+    25.设置swap文件中的page数量，由于页表（一种表示页面空间或使用的bitmap）是放在内存中的，在磁盘上每8个pages将消耗1byte的内存
+      vm-pages 134217728
+    26.设置访问swap文件的线程数，最好不要超过机器的核数，如果设置为0，那么所有对swap文件的操作都是串行的，可能会造成比较长时间的延迟。默认值为4
+      vm-max-threads 4
+    27.设置在向客户端应答时，是否把较小的包合并为一个包发送，默认为开启
+      glueoutputbuf yes
+    28.指定在超过一定的数量或者最大的元素超过某一临界值时，采用一种特殊的哈希算法
+      hash-max-zipmap-entries 64
+      hash-max-zipmap-value 512
+    29.指定是否激活重置哈希，默认为开启
+      activerehashing yes
+    30.指定包含其它的配置文件，可以在同一主机上多个Redis实例之间使用同一份配置文件，而同时各个实例又拥有自己的特定配置文件
+      include /path/to/local.conf
+    31.Redis作为优秀的中间缓存件，时常会存储大量的数据，即使采取了集群部署来动态扩容，也应该即时的整理内存，维持系统性能（如果数据一直新增，内存很快就会占满）
+      在Redis中有两种解决方案
+      一是为数据设置超时时间，
+      设定内存空间，建议内存不要超过1G 256-512M
+      二是采用LRU算法动态将不用的数据删除。内存管理的一种页面置换算法，对于在内存中但又不用的数据块（内存块）叫做LRU，操作系统会根据哪些数据属于LRU而将其移出内存而腾出控件来加载另外的数据。
+      1.volatile-lru: 设定超时时间的数据中，删除最不常使用的数据
+      2.allkeys-lru: 查询所有的key中最不常使用的数据进行删除，这是应用最广泛的策略
+      3.volatile-random: 在已经设定了超时的数据中随机删除
+      4.allkeys-random: 查询所有的key之后随机删除
+      5.volatile-ttl: 查询全部设定超时时间的数据，之后排序，将马上将要过期的数据进行删除操作
+      6.Noeviction: 如果设置为该属性，则不会进行删除操作，如果内存溢出则报错返回
+      7.volatile-lfu: 从所有配置了过期时间的键中驱逐使用频率最少的键 
+      8.allkeys-lfu: 从所有键中驱逐使用频率最少的键
