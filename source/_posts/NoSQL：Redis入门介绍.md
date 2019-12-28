@@ -169,6 +169,7 @@ Redis：REmote DIctionary Server（远程字典服务器），是一个高性能
       save 900 1  900秒（15分钟）内有1个更改
       save 300 10  300秒（5分钟）内有10个更改
       save 60 10000  60秒内有10000个更改
+      ps: 若没有同步（持久化），如非正常关闭Redis，未持久化成功的key将丢失
     10.指定存储至本地数据库时是否压缩数据，默认为yes，Redis采用LZF压缩，如果为了节省CPU时间，可以关闭该选项，但会导致数据库文件变的巨大
       rdbcompression yes
     11.指定本地数据库文件名，默认值为dump.rdb
@@ -226,5 +227,12 @@ Redis：REmote DIctionary Server（远程字典服务器），是一个高性能
       4.allkeys-random: 查询所有的key之后随机删除
       5.volatile-ttl: 查询全部设定超时时间的数据，之后排序，将马上将要过期的数据进行删除操作
       6.Noeviction: 如果设置为该属性，则不会进行删除操作，如果内存溢出则报错返回
-      7.volatile-lfu: 从所有配置了过期时间的键中驱逐使用频率最少的键 
+      7.volatile-lfu: 从所有配置了过期时间的键中驱逐使用频率最少的键
       8.allkeys-lfu: 从所有键中驱逐使用频率最少的键
+### 4.Redis的关闭
+
+    非正常关闭，数据容易丢失
+      ps -ef | grep -i redis
+      kill -9 pid
+    正常关闭，数据保存
+      ./bin/redis-cli shutdown
