@@ -1,17 +1,17 @@
 ---
-title: 'NoSQL：Redis入门介绍'
+title: 'Redis: Redis入门介绍'
 date: 2018-06-05 17:07:44
 tags:
-categories: NoSql
+categories: Redis
 ---
-## 一、Redis入门概述
-### 1.Redis是什么
+## Redis入门概述
+### Redis是什么
 Redis：REmote DIctionary Server（远程字典服务器），是一个高性能的（key/value）分布式内存数据库，基于内存运行，并支持持久化的NOSQL数据库，也被人们称为数据结构数据库。
 
     Redis支持数据的持久化，可以将内存中的数据保持在磁盘中，重启的时候可以再次加载进行使用
     Redis不仅仅支持简单的key-value类型的数据，同时还提供list，set，zset（sorted set），hash等数据结构的存储
     Redis支持数据的备份，即master-slave模式的数据备份
-### 2.Redis的安装
+### Redis的安装
 我们在虚拟机上以centos为例进行Redis的安装：
 
 ![登录页面](https://raw.githubusercontent.com/wiki/zhuifengcc/zhuifengcc.github.io/images/NoSQL/redis_1/2-1.png)
@@ -145,8 +145,7 @@ Redis：REmote DIctionary Server（远程字典服务器），是一个高性能
 ![进程查看附图](https://raw.githubusercontent.com/wiki/zhuifengcc/zhuifengcc.github.io/images/NoSQL/redis_1/2-34.png)
 
 以上就是redis整个的安装过程，后续对redis的数据结构进行整合和记录
-### 3.Redis的配置文件
-
+### Redis的配置文件
     1.Redis默认不是以守护进程的方式运行，可以通过该配置项修改，使用yes启用守护进程
       daemonize no
     2.当Redis以守护进程方式运行时，Redis默认会把pid写入/var/run/redis.pid，可以通过pidfile指定
@@ -229,8 +228,7 @@ Redis：REmote DIctionary Server（远程字典服务器），是一个高性能
       6.Noeviction: 如果设置为该属性，则不会进行删除操作，如果内存溢出则报错返回
       7.volatile-lfu: 从所有配置了过期时间的键中驱逐使用频率最少的键
       8.allkeys-lfu: 从所有键中驱逐使用频率最少的键
-### 4.Redis的关闭
-
+### Redis的关闭
     非正常关闭，数据容易丢失
       ps -ef | grep -i redis
       kill -9 pid

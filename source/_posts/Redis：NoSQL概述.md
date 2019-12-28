@@ -1,11 +1,11 @@
 ---
-title: 'NoSQL：NoSQL概述'
+title: 'Redis: NoSQL概述'
 date: 2018-06-01 20:38:10
 tags:
-categories: NoSql 
+categories: Redis
 ---
-## 一、发展历程
-### 1.单机关系型数据库
+## 发展历程
+### 单机关系型数据库
 APP - DAL - MySQL Instance（APP - Action - Service - DAO - MySQL Instance）
 ![单机结构图](https://raw.githubusercontent.com/wiki/zhuifengcc/zhuifengcc.github.io/images/NoSQL/summary/1.1.png)
 数据存储的瓶颈：
@@ -13,46 +13,46 @@ APP - DAL - MySQL Instance（APP - Action - Service - DAO - MySQL Instance）
     1、数据量的总大小，一个机器放不下
     2、数据的索引（B+树），一个机器内存放不下
     3、访问量（读写混合），一个实例不能承受（后续主从复制，读写分离的诞生）
-### 2.Memcache（缓存）+ MySQL + 垂直拆分
+### Memcache（缓存）+ MySQL + 垂直拆分
 APP - DAL - Cache - MySQL Instances（Instance1：business 1、Instance2：business 2、Instance3：userinfo...）
 ![缓存+垂直拆分](https://raw.githubusercontent.com/wiki/zhuifengcc/zhuifengcc.github.io/images/NoSQL/summary/1.2.png)
 数据库垂直拆分
-### 3.MySQL主从复制、读写分离
+### MySQL主从复制、读写分离
 ![主从复制](https://raw.githubusercontent.com/wiki/zhuifengcc/zhuifengcc.github.io/images/NoSQL/summary/1.3.png)
 主从复制（master/slave）：在主库插入时，从库迅速插入，容灾备份
 读写分离：读写分别在不同的数据库，写操作在主库进行，读操作在从库进行
-### 4.分库分表 + 水平拆分 + MySQL集群（Cluster）
+### 分库分表 + 水平拆分 + MySQL集群（Cluster）
 ![分库分表+集群](https://raw.githubusercontent.com/wiki/zhuifengcc/zhuifengcc.github.io/images/NoSQL/summary/1.4.png)
 主库写压力出现瓶颈，MySQL数据引擎MyIASM使用表锁（锁整张表），InnoDB使用行锁（锁单行数据，并发性高），MySQL应用开始使用InnoDB。
 
 分库分表：紧耦合的业务相关数据放在一个库，变化小冷热门的数据放在一个库。数据量大，分表存储。
-### 5.MySQL的扩展性瓶颈
+### MySQL的扩展性瓶颈
 Blob，CLob，视频的存储？大数据下IO压力大，表结构更困难
-### 6.今天是什么样子？
+### 今天是什么样子？
 Users - 企业防火墙 - nginx主备 - 应用服务器集群 - MySQL/Oracle集群（缓存服务器、hadoop服务器、流媒体服务器、电子邮件服务器） 
-### 7.NoSQL的出现
+### NoSQL的出现
 用户产生的数据和用户操作日志已经成倍的增长，如果我们要对这些用户数据进行挖掘，如复杂的人际关系，传统关系型数据库已经不适合这些应用了
-## 二、NoSQL介绍
-### 1. NoSQL是什么
+## NoSQL介绍
+### NoSQL是什么
 Not Only Sql，泛指非关系型数据库。数据存储不需要固定的模式，无需多余操作就可以横向扩展。
-### 2. NoSQL可以做什么
+### NoSQL可以做什么
     1、易扩展：去掉关系型特性，数据之间无关系，非常容易扩展（K/V键值对）
     2、大数据量高性能:NoSQL数据库具有非常高的读写性能，例如Redis，可达到1s写8w次，读11w次
     3、多样灵活的数据模型：NoSQL无需为事先存储的数据建立字段，随时可以存储自定义的数据格式。而在关系型数据库中，如果是一张非常大数据量的表，增删字段是非常痛苦的
-## 3、互联网时代的3V+3高
+## 互联网时代的3V+3高
 大数据时代的3V：海量（Volume）、多样（Variety）、实时（Velocity）
 
 互联网需求的3高：高并发、高可扩（横向扩展，集群）、高性能/高可用（单点故障、容灾备份、keep-alive）
 
 多数据源多数据类型的存储问题，以淘宝为例，商品基本信息（MySQL，淘宝自主，去IOE化（IBM小型机、Oracle、EMC存储设备），商品描述、详情、评论信息（多文字类）（MengoDB），图片（分布式的文件系统中TFS），站内搜索（ISearch），高频词汇（redis），商品的交易，价格计算、计分累计（3方接口）
-## 4、NoSQL数据模型简介（聚合模型）
+## NoSQL数据模型简介（聚合模型）
 BSON（）是一种类json的一种二进制形式的存储格式，简称Binary JSON，它和JSON一样，支持内嵌的文档对象和数组对象。
 
     KV键值对
     BSON
     列族
     图形
-## 5、NoSQL数据库的四大分类
+## NoSQL数据库的四大分类
     KV键值
     文档型数据库（bson格式较多）
         CouchDB
@@ -63,7 +63,7 @@ BSON（）是一种类json的一种二进制形式的存储格式，简称Binary
     图关系数据库
         放的是关系比如：朋友圈社交网络、广告推荐系统
         Neo4J，InfoGrid
-## 6、在分布式数据库中CAP原理CAP+BASE
+## 在分布式数据库中CAP原理CAP+BASE
 RDBMS 传统的ACID
 
     A:Atomicity(原子性)
