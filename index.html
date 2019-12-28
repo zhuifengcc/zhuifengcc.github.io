@@ -2219,11 +2219,11 @@ hello-service.ribbon.MaxAutoRetries=1
       
         
           
-            <h2 id="一、Redis入门概述"><a href="#一、Redis入门概述" class="headerlink" title="一、Redis入门概述"></a>一、Redis入门概述</h2><h3 id="1-Redis是什么"><a href="#1-Redis是什么" class="headerlink" title="1.Redis是什么"></a>1.Redis是什么</h3><p>Redis：REmote DIctionary Server（远程字典服务器），是一个高性能的（key/value）分布式内存数据库，基于内存运行，并支持持久化的NOSQL数据库，也被人们称为数据结构数据库。</p>
+            <h2 id="Redis入门概述"><a href="#Redis入门概述" class="headerlink" title="Redis入门概述"></a>Redis入门概述</h2><h3 id="Redis是什么"><a href="#Redis是什么" class="headerlink" title="Redis是什么"></a>Redis是什么</h3><p>Redis：REmote DIctionary Server（远程字典服务器），是一个高性能的（key/value）分布式内存数据库，基于内存运行，并支持持久化的NOSQL数据库，也被人们称为数据结构数据库。</p>
 <pre><code>Redis支持数据的持久化，可以将内存中的数据保持在磁盘中，重启的时候可以再次加载进行使用
 Redis不仅仅支持简单的key-value类型的数据，同时还提供list，set，zset（sorted set），hash等数据结构的存储
 Redis支持数据的备份，即master-slave模式的数据备份
-</code></pre><h3 id="2-Redis的安装"><a href="#2-Redis的安装" class="headerlink" title="2.Redis的安装"></a>2.Redis的安装</h3><p>我们在虚拟机上以centos为例进行Redis的安装：</p>
+</code></pre><h3 id="Redis的安装"><a href="#Redis的安装" class="headerlink" title="Redis的安装"></a>Redis的安装</h3><p>我们在虚拟机上以centos为例进行Redis的安装：</p>
 <p><img src="https://raw.githubusercontent.com/wiki/zhuifengcc/zhuifengcc.github.io/images/NoSQL/redis_1/2-1.png" alt="登录页面"></p>
 <p>因为许久没有碰linux了，这里将整体过程及踩到的坑做一个记录：</p>
 <p>默认安装好系统后时无法使用wget的，本打算用yum下载wget，再用wget完成对redis的下载，如下所示：</p>
@@ -2296,7 +2296,7 @@ USERCTL=no
 </code></pre><p>执行ps -ef|grep redis 查看redis进程的运行前后对比情况</p>
 <p><img src="https://raw.githubusercontent.com/wiki/zhuifengcc/zhuifengcc.github.io/images/NoSQL/redis_1/2-34.png" alt="进程查看附图"></p>
 <p>以上就是redis整个的安装过程，后续对redis的数据结构进行整合和记录</p>
-<h3 id="3-Redis的配置文件"><a href="#3-Redis的配置文件" class="headerlink" title="3.Redis的配置文件"></a>3.Redis的配置文件</h3><pre><code>1.Redis默认不是以守护进程的方式运行，可以通过该配置项修改，使用yes启用守护进程
+<h3 id="Redis的配置文件"><a href="#Redis的配置文件" class="headerlink" title="Redis的配置文件"></a>Redis的配置文件</h3><pre><code>1.Redis默认不是以守护进程的方式运行，可以通过该配置项修改，使用yes启用守护进程
   daemonize no
 2.当Redis以守护进程方式运行时，Redis默认会把pid写入/var/run/redis.pid，可以通过pidfile指定
   pidfile /var/run/redis.pid
@@ -2378,7 +2378,7 @@ USERCTL=no
   6.Noeviction: 如果设置为该属性，则不会进行删除操作，如果内存溢出则报错返回
   7.volatile-lfu: 从所有配置了过期时间的键中驱逐使用频率最少的键
   8.allkeys-lfu: 从所有键中驱逐使用频率最少的键
-</code></pre><h3 id="4-Redis的关闭"><a href="#4-Redis的关闭" class="headerlink" title="4.Redis的关闭"></a>4.Redis的关闭</h3><pre><code>非正常关闭，数据容易丢失
+</code></pre><h3 id="Redis的关闭"><a href="#Redis的关闭" class="headerlink" title="Redis的关闭"></a>Redis的关闭</h3><pre><code>非正常关闭，数据容易丢失
   ps -ef | grep -i redis
   kill -9 pid
 正常关闭，数据保存
