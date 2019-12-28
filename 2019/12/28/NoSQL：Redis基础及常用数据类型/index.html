@@ -79,17 +79,17 @@
 
 
 
-<meta name="description" content="Redis常用命令Redis键keyDEL key该命令用于在key存在时删除keyDUMP key序列化给定key，并返回序列化的值EXISTS key检查给定key是否存在EXPIRE key seconds为给定key设置过期时间（以s计） ps: 应用场景 1.限时的优惠活动信息 2.网站数据缓存（对于一些需要定时更新的数据，例如：积分排行榜） 3.手机验证码 4.限制网站访客访问频率（例">
+<meta name="description" content="Redis常用命令Redis键keyDEL key该命令用于在key存在时删除keyDUMP key序列化给定key，并返回序列化的值EXISTS key检查给定key是否存在EXPIRE key seconds为给定key设置过期时间（以s计）PEXPIRE key milliseconds为给定key设置过期时间（以ms计） ps: 应用场景 1.限时的优惠活动信息 2.网站数据缓存（对于一些">
 <meta property="og:type" content="article">
 <meta property="og:title" content="NoSQL:Redis基础及常用数据类型">
 <meta property="og:url" content="http://yoursite.com/2019/12/28/NoSQL：Redis基础及常用数据类型/index.html">
 <meta property="og:site_name" content="沐奕">
-<meta property="og:description" content="Redis常用命令Redis键keyDEL key该命令用于在key存在时删除keyDUMP key序列化给定key，并返回序列化的值EXISTS key检查给定key是否存在EXPIRE key seconds为给定key设置过期时间（以s计） ps: 应用场景 1.限时的优惠活动信息 2.网站数据缓存（对于一些需要定时更新的数据，例如：积分排行榜） 3.手机验证码 4.限制网站访客访问频率（例">
+<meta property="og:description" content="Redis常用命令Redis键keyDEL key该命令用于在key存在时删除keyDUMP key序列化给定key，并返回序列化的值EXISTS key检查给定key是否存在EXPIRE key seconds为给定key设置过期时间（以s计）PEXPIRE key milliseconds为给定key设置过期时间（以ms计） ps: 应用场景 1.限时的优惠活动信息 2.网站数据缓存（对于一些">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:updated_time" content="2019-12-28T13:35:07.333Z">
+<meta property="og:updated_time" content="2019-12-28T13:36:03.319Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="NoSQL:Redis基础及常用数据类型">
-<meta name="twitter:description" content="Redis常用命令Redis键keyDEL key该命令用于在key存在时删除keyDUMP key序列化给定key，并返回序列化的值EXISTS key检查给定key是否存在EXPIRE key seconds为给定key设置过期时间（以s计） ps: 应用场景 1.限时的优惠活动信息 2.网站数据缓存（对于一些需要定时更新的数据，例如：积分排行榜） 3.手机验证码 4.限制网站访客访问频率（例">
+<meta name="twitter:description" content="Redis常用命令Redis键keyDEL key该命令用于在key存在时删除keyDUMP key序列化给定key，并返回序列化的值EXISTS key检查给定key是否存在EXPIRE key seconds为给定key设置过期时间（以s计）PEXPIRE key milliseconds为给定key设置过期时间（以ms计） ps: 应用场景 1.限时的优惠活动信息 2.网站数据缓存（对于一些">
 
 
 
@@ -331,13 +331,13 @@
       
 
       
-        <h2 id="Redis常用命令"><a href="#Redis常用命令" class="headerlink" title="Redis常用命令"></a>Redis常用命令</h2><h3 id="Redis键key"><a href="#Redis键key" class="headerlink" title="Redis键key"></a>Redis键key</h3><p>DEL key<br>该命令用于在key存在时删除key<br>DUMP key<br>序列化给定key，并返回序列化的值<br>EXISTS key<br>检查给定key是否存在<br>EXPIRE key seconds<br>为给定key设置过期时间（以s计）</p>
+        <h2 id="Redis常用命令"><a href="#Redis常用命令" class="headerlink" title="Redis常用命令"></a>Redis常用命令</h2><h3 id="Redis键key"><a href="#Redis键key" class="headerlink" title="Redis键key"></a>Redis键key</h3><p>DEL key<br>该命令用于在key存在时删除key<br>DUMP key<br>序列化给定key，并返回序列化的值<br>EXISTS key<br>检查给定key是否存在<br>EXPIRE key seconds<br>为给定key设置过期时间（以s计）<br>PEXPIRE key milliseconds<br>为给定key设置过期时间（以ms计）</p>
 <pre><code>ps: 应用场景
 1.限时的优惠活动信息
 2.网站数据缓存（对于一些需要定时更新的数据，例如：积分排行榜）
 3.手机验证码
 4.限制网站访客访问频率（例如：1分钟最多访问10次），限制登陆了之后多少秒可以再次登陆（过期时间）
-</code></pre><p>PEXPIRE key milliseconds<br>为给定key设置过期时间（以ms计）<br>TTL key<br>以s为单位，返回给定key的剩余生存时间（time to live）<br>PTTL key<br>以ms为单位返回key的剩余的过期时间<br>PERSIST key<br>移除key的过期时间，key将持久保持<br>KEYS pattern<br>查找所有符合给定模式（pattern）的key<br>keys 通配符  获取所有与pattern匹配的key，返回所有与该匹配<br> 通配符:</p>
+</code></pre><p>TTL key<br>以s为单位，返回给定key的剩余生存时间（time to live）<br>PTTL key<br>以ms为单位返回key的剩余的过期时间<br>PERSIST key<br>移除key的过期时间，key将持久保持<br>KEYS pattern<br>查找所有符合给定模式（pattern）的key<br>keys 通配符  获取所有与pattern匹配的key，返回所有与该匹配<br> 通配符:</p>
 <pre><code>* 代表所有
 ? 表示代表一个字符
 </code></pre><p> ps: 如当前有3个key(users:1,users:2,users:3) 可以通过keys users:?查询<br>RANDOMKEY<br>从当前数据库中随机返回一个key<br>RENAME key newkey<br>修改key的名称<br>MOVE key db<br>将当前数据库的key移动到指定的数据库db中<br>TYPE key<br>返回key所存储的值的类型</p>
