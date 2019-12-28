@@ -3,4 +3,4 @@
 
 1.清空旧数据  hexo clean
 2.生成并部署git  hexo d -g
-3.本地启动hexo  serverhexo s
+3.本地启动hexo  hexo s
