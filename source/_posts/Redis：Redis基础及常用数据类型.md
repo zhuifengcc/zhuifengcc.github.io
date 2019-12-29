@@ -5,6 +5,7 @@ tags:
 categories: Redis
 ---
 ## Redis常用命令
+命令不区分大小写，key区分大小写
 ### Redis键key
 DEL key
 该命令用于在key存在时删除key
@@ -17,7 +18,7 @@ EXPIRE key seconds
 PEXPIRE key milliseconds
 为给定key设置过期时间（以ms计）
 
-    ps: 应用场景
+    应用场景
     1.限时的优惠活动信息
     2.网站数据缓存（对于一些需要定时更新的数据，例如：积分排行榜）
     3.手机验证码
@@ -31,10 +32,11 @@ PERSIST key
 KEYS pattern
 查找所有符合给定模式（pattern）的key
 keys 通配符  获取所有与pattern匹配的key，返回所有与该匹配
- 通配符:
+
+    通配符:
     * 代表所有
     ? 表示代表一个字符
- ps: 如当前有3个key(users:1,users:2,users:3) 可以通过keys users:?查询
+    如当前有3个key(users:1,users:2,users:3) 可以通过keys users:?查询
 RANDOMKEY
 从当前数据库中随机返回一个key
 RENAME key newkey
@@ -44,6 +46,95 @@ MOVE key db
 TYPE key
 返回key所存储的值的类型
 ### key的命名建议
+    Redis单个key存入512M大小
     1.key不要太长，尽量不要超过1024子节，这不仅消耗内存，而且会降低查找的效率
     2.key也不要太短，太短的话，key的可读性会降低
     3.在一个项目中，key最好使用统一的命名模式，例如: user:123:password
+    ps: 一般不用_,避免与字段中的_冲突
+## Redis数据类型
+Redis支持五种数据类型：string(字符串), hash(哈希), list(列表), set(集合), zset(sorted set 有序集合)
+### String
+string是redis最基本的数据类型，一个key对应一个value。一个key最大存储512M。
+string类型是二进制安全的。意味着是Redis的string可以包含任何数据，比如图片或者序列化的对象。
+
+    二进制安全是指，在传输数据时，保证二进制数据的信息安全，也就是不被篡改、破译等，如果被攻击，能够及时检测出来
+    二进制安全特点：
+        1.编码，解码发生在客户端完成，执行效率高
+        2.不需要频繁的编解码，不会出现乱码
+#### String命令
+赋值语法：
+SET KEY_NAME VALUE
+用于设定指定key的值。如果key已经存储值，SET就覆写旧值，且无视类型
+SETNX key value //解决分布式锁 方案之一
+只有在key不存在的时候设置key的值。SetNX(SET if Not eXist) 命令在指定的key不存在时，为key设置指定的值
+MSET key value [key value ...]
+同时设置一个或多个key-value对
+取值语法：
+GET KEY_NAME
+用于获取指定key的值。如果key不存在，返回nil。如果key存储的值不是字符串类型，返回一个错误
+GETRANGE key start end
+用于获取存储在指定key中字符串的子字符串。字符串的截取由start和end两个偏移量决定（包括start和end在内）
+GETBIT key offset
+对key所存储的字符串值，获取指定偏移量上的位（bit）
+MGET key1 [key2 ..]
+获取所有（一个或多个）给定的key值
+GETSET语法：
+GETSET KEY_NAME VALUE
+用于设定指定key的值，并返回key的旧值，当key不存在时，返回nil
+STRLEN key
+返回key所存储的字符串的长度
+删除语法：
+DEL KEY_NAME
+删除指定的key，如果存在，返回值数字类型
+自增/自减：
+INCR KEY_NAME
+将key中存储的数字增1。如果key不存在，那么key的值会先被初始化为0，然后执行INCR操作
+INCRBY KEY_NAME 增量值
+将key中存储的数字加上指定的增量值
+DECR KEY_NAME 
+将key中存储的数字减1
+DECRBY KEY_NAME 减值
+将key中存储的数字减去指定的减值
+APPEND KEY_NAME VALUE
+用于为指定的key追加至末尾，为其赋值
+#### 应用场景
+1.String通常用于保存单个字符串或json字符串数据
+2.因String是二进制安全的，可存储图片信息
+3.计数器（常规key-value缓存应用。常规计数：粉丝数，微博数）
+INCR等指令本身就具有原子操作的特征，所以我们完全可以用Redis的INCR，INCRBY，DECR，DECRBY等指令来实现原子计数的效果。例如，在某种场景下有3个客户端同时读取了mynum的值（值为2），同时进行了加1的操作，那么最后mynum一定是5
+不少网站利用这种特征实现业务上的统计计数的需求。
+### Hash
+Redis hash是一个string类型的field和value的映射表，hash特别适用与存储对象。Redis中每个hash可以存储2^32-1键值对（40多亿）可以看成具有key和value的map容器。该类型的数据仅占用很少的磁盘空间（相比与json）
+#### Hash命令
+赋值语法：
+HSET key field value
+为指定的key，设定field/value
+HMSET key field value [field1 value1] ...
+同时将多个k-v对设置到哈希表key中
+取值语法：
+HGET key field
+获取存储在Hash中的值，根绝field得到value
+HMGET key field1[field2]
+获取key所有指定字段的值
+HGETALL key
+返回Hash表中所有的字段和值
+HKEYS key
+获取所有Hash表中的字段
+HLEN key
+获取哈希表中字段的数量
+删除语法：
+HDEL key field1[field2]
+删除一个或多个Hash表字段
+其它语法：
+HSETNX key field value
+只有在字段field不存在时，设置Hash表字段的值
+HINCRBY key field increment
+为Hash表key中的指定字段的整数值加上增量increment
+HINCRBYFLOAT key field increment
+为Hash表key中的指定字段的浮点数值加上增量increment
+HEXISTS key field
+查看Hash表key中，指定的字段是否存在
+#### 应用场景
+1.常用于存储一个对象
+2.为什么不用String存储对象？（序列化与反序列化，修改值的问题，并发问题）
+Hash是最接近关系数据库结构的数据类型，可以将数据库一条记录或程序中的一个对象转换为hashmap存储在Redis中，并提供了直接存取这个Map成员的接口
