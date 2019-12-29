@@ -86,7 +86,7 @@
 <meta property="og:site_name" content="沐奕">
 <meta property="og:description" content="Redis常用命令Redis键keyDEL key该命令用于在key存在时删除keyDUMP key序列化给定key，并返回序列化的值EXISTS key检查给定key是否存在EXPIRE key seconds为给定key设置过期时间（以s计）PEXPIRE key milliseconds为给定key设置过期时间（以ms计） ps: 应用场景 1.限时的优惠活动信息 2.网站数据缓存（对于一些">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:updated_time" content="2019-12-28T13:49:19.078Z">
+<meta property="og:updated_time" content="2019-12-29T13:34:24.525Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Redis: Redis基础及常用数据类型">
 <meta name="twitter:description" content="Redis常用命令Redis键keyDEL key该命令用于在key存在时删除keyDUMP key序列化给定key，并返回序列化的值EXISTS key检查给定key是否存在EXPIRE key seconds为给定key设置过期时间（以s计）PEXPIRE key milliseconds为给定key设置过期时间（以ms计） ps: 应用场景 1.限时的优惠活动信息 2.网站数据缓存（对于一些">
@@ -341,9 +341,17 @@
 <pre><code>* 代表所有
 ? 表示代表一个字符
 </code></pre><p> ps: 如当前有3个key(users:1,users:2,users:3) 可以通过keys users:?查询<br>RANDOMKEY<br>从当前数据库中随机返回一个key<br>RENAME key newkey<br>修改key的名称<br>MOVE key db<br>将当前数据库的key移动到指定的数据库db中<br>TYPE key<br>返回key所存储的值的类型</p>
-<h3 id="key的命名建议"><a href="#key的命名建议" class="headerlink" title="key的命名建议"></a>key的命名建议</h3><pre><code>1.key不要太长，尽量不要超过1024子节，这不仅消耗内存，而且会降低查找的效率
+<h3 id="key的命名建议"><a href="#key的命名建议" class="headerlink" title="key的命名建议"></a>key的命名建议</h3><pre><code>Redis单个key存入512M大小
+1.key不要太长，尽量不要超过1024子节，这不仅消耗内存，而且会降低查找的效率
 2.key也不要太短，太短的话，key的可读性会降低
 3.在一个项目中，key最好使用统一的命名模式，例如: user:123:password
+ps: 一般不用_,避免与字段中的_冲突
+</code></pre><h2 id="Redis数据类型"><a href="#Redis数据类型" class="headerlink" title="Redis数据类型"></a>Redis数据类型</h2><p>Redis支持五种数据类型：string(字符串), hash(哈希), list(列表), set(集合), zset(sorted set 有序集合)</p>
+<h3 id="String"><a href="#String" class="headerlink" title="String"></a>String</h3><p>string是redis最基本的数据类型，一个key对应一个value。一个key最大存储512M。<br>string类型是二进制安全的。意味着是Redis的string可以包含任何数据，比如图片或者序列化的对象。</p>
+<pre><code>ps: 二进制安全是指，在传输数据时，保证二进制数据的信息安全，也就是不被篡改、破译等，如果被攻击，能够及时检测出来
+二进制安全特点：
+    1.编码，解码发生在客户端完成，执行效率高
+    2.不需要频繁的编解码，不会出现乱码
 </code></pre>
       
     </div>
@@ -499,7 +507,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#Redis常用命令"><span class="nav-number">1.</span> <span class="nav-text">Redis常用命令</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Redis键key"><span class="nav-number">1.1.</span> <span class="nav-text">Redis键key</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#key的命名建议"><span class="nav-number">1.2.</span> <span class="nav-text">key的命名建议</span></a></li></ol></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#Redis常用命令"><span class="nav-number">1.</span> <span class="nav-text">Redis常用命令</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Redis键key"><span class="nav-number">1.1.</span> <span class="nav-text">Redis键key</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#key的命名建议"><span class="nav-number">1.2.</span> <span class="nav-text">key的命名建议</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Redis数据类型"><span class="nav-number">2.</span> <span class="nav-text">Redis数据类型</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#String"><span class="nav-number">2.1.</span> <span class="nav-text">String</span></a></li></ol></li></ol></div>
             
 
           </div>
