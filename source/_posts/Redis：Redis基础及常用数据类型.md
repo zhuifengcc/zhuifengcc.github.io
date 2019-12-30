@@ -125,6 +125,7 @@ HLEN key
 删除语法：
 HDEL key field1[field2]
 删除一个或多个Hash表字段
+ps: 如果Redis的value值被删除完了，这个key会被自动回收掉。故可以通过删除所有当前Hash的field来删除当前Hash的key。
 其它语法：
 HSETNX key field value
 只有在字段field不存在时，设置Hash表字段的值
