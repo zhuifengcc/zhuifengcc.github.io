@@ -79,17 +79,17 @@
 
 
 
-<meta name="description" content="Java连接Redis一些Java客户端访问，有：Jedis/Redisson/Jredis/JDBC-Redis等，其中官方推荐使用Jedis和Redisson。常用Jedis">
+<meta name="description" content="Java连接Redis一些Java客户端访问，有：Jedis/Redisson/Jredis/JDBC-Redis等，其中官方推荐使用Jedis和Redisson。常用Jedis &amp;lt;dependency&amp;gt;     &amp;lt;groupId&amp;gt;redis.clients&amp;lt;/groupId&amp;gt;     &amp;lt;artifactId&amp;gt;jedis&amp;lt;/artifactId">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Redis：Redis的连接">
 <meta property="og:url" content="http://yoursite.com/2019/12/30/Redis：Redis的连接/index.html">
 <meta property="og:site_name" content="沐奕">
-<meta property="og:description" content="Java连接Redis一些Java客户端访问，有：Jedis/Redisson/Jredis/JDBC-Redis等，其中官方推荐使用Jedis和Redisson。常用Jedis">
+<meta property="og:description" content="Java连接Redis一些Java客户端访问，有：Jedis/Redisson/Jredis/JDBC-Redis等，其中官方推荐使用Jedis和Redisson。常用Jedis &amp;lt;dependency&amp;gt;     &amp;lt;groupId&amp;gt;redis.clients&amp;lt;/groupId&amp;gt;     &amp;lt;artifactId&amp;gt;jedis&amp;lt;/artifactId">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:updated_time" content="2019-12-30T16:56:04.555Z">
+<meta property="og:updated_time" content="2020-01-01T15:57:23.556Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Redis：Redis的连接">
-<meta name="twitter:description" content="Java连接Redis一些Java客户端访问，有：Jedis/Redisson/Jredis/JDBC-Redis等，其中官方推荐使用Jedis和Redisson。常用Jedis">
+<meta name="twitter:description" content="Java连接Redis一些Java客户端访问，有：Jedis/Redisson/Jredis/JDBC-Redis等，其中官方推荐使用Jedis和Redisson。常用Jedis &amp;lt;dependency&amp;gt;     &amp;lt;groupId&amp;gt;redis.clients&amp;lt;/groupId&amp;gt;     &amp;lt;artifactId&amp;gt;jedis&amp;lt;/artifactId">
 
 
 
@@ -332,7 +332,16 @@
 
       
         <h2 id="Java连接Redis"><a href="#Java连接Redis" class="headerlink" title="Java连接Redis"></a>Java连接Redis</h2><p>一些Java客户端访问，有：Jedis/Redisson/Jredis/JDBC-Redis等，其中官方推荐使用Jedis和Redisson。常用Jedis</p>
-
+<pre><code>&lt;dependency&gt;
+    &lt;groupId&gt;redis.clients&lt;/groupId&gt;
+    &lt;artifactId&gt;jedis&lt;/artifactId&gt;
+    &lt;version&gt;2.4.2&lt;/version&gt;
+&lt;/dependency&gt;
+</code></pre><p>确保Redis服务器开启了外部端口:</p>
+<pre><code>查看已经开放的端口: firewall-cmd --list-ports
+开启端口：firewall-cmd --zone=public --add-port=6379/tcp --permanent
+重启防火墙：firewall-cmd --reload
+</code></pre><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// redis sever host &amp;&amp; port</span></span><br><span class="line">Jedis jedis = <span class="keyword">new</span> Jedis(<span class="string">"192.168.20.1"</span>, <span class="number">6379</span>);</span><br><span class="line"><span class="comment">// password</span></span><br><span class="line">jedis.auth(<span class="string">"1q2w3e4r"</span>);</span><br><span class="line"><span class="comment">// test connection</span></span><br><span class="line">System.out.println(jedis.ping());</span><br><span class="line">jedis.set(<span class="string">"stringKey"</span>, <span class="string">"string value"</span>);</span><br><span class="line">System.out.println(jedis.get(<span class="string">"stringKey"</span>));</span><br><span class="line">jedis.close();</span><br></pre></td></tr></table></figure>
       
     </div>
     
@@ -507,7 +516,7 @@
 
     <footer id="footer" class="footer">
       <div class="footer-inner">
-        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2020</span>
   <span class="with-love">
     <i class="fa fa-user"></i>
   </span>
