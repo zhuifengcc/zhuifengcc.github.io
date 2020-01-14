@@ -536,7 +536,10 @@ ps: 一般不用_,避免与字段中的_冲突
 <p>Redis的集合对象set的底层存储结构使用了intset和hashtable两种数据结构存储的，intset可以理解为数组，hashtable就是普通的哈希表<br>intset内部其实是一个数组(int8_t coentents[]数组)，而且存储结构的时候是有序的，因为在查找数据的时候是通过二分查找来实现的</p>
 <h4 id="Set命令"><a href="#Set命令" class="headerlink" title="Set命令"></a>Set命令</h4><p>赋值语法:<br>SADD key member1 [member2]<br>向集合添加一个或多个成员<br>取值语法：<br>SCARD key<br>获取集合的成员数<br>SMEMBERS key<br>返回集合中的所有成员<br>SISMEMBER key member<br>判断member元素是否是集合key的成员<br>SRANDMEMBER key[count]<br>返回集合中一个或多个随机数<br>删除语法：<br>SREM key member1 [member2]<br>移除集合中一个或多个成员<br>SPOP key[count]<br>移除并返回集合中的一个随机元素<br>SMOVE source destination member<br>将member元素从source集合移动到destination集合<br>差集语法：<br>SDIFF key1 [key2]<br>返回给定所有集合的差集，按照key1为标准<br>SDIFFSTORE destination key1 [key2]<br>返回给定所有集合的差集并存储在destination中<br>交集语法：<br>SINTER key1 [key2]<br>返回给定所有集合的差集（共有数据）<br>SINTERSTORE destination key1 [key2]<br>返回给定所有集合的交集并存储在destination中<br>并集语法：<br>SUNION key1 [key2]<br>返回给定所有集合的并集<br>SUNIONSTORE destination key1 [key2]<br>返回给定所有集合的并集并存储在destination中</p>
 <h4 id="应用场景-3"><a href="#应用场景-3" class="headerlink" title="应用场景"></a>应用场景</h4><p>常应用于：对两个集合间的数据进行交集，并集，差集的计算<br>1.以非常方便的实现如共同关注，共同喜好，二度好友等功能。以及选择是否存储到新的集合返回给客户端<br>2.利用唯一性，可以统计访问网站的所有独立的IP</p>
-<h3 id="ZSet"><a href="#ZSet" class="headerlink" title="ZSet"></a>ZSet</h3>
+<h3 id="ZSet"><a href="#ZSet" class="headerlink" title="ZSet"></a>ZSet</h3><p>1.Redis有序集合和集合一样也是string类型元素的集合，且不允许重复的成员。<br>2.不同的是每个元素都会关联一个double类型的分数。Redis正是通过分数来为集合中的成员进行从小达大的排序。<br>3.有序集合的成员是唯一的，但分数(score)却可以重复。</p>
+<h4 id="ZSet命令"><a href="#ZSet命令" class="headerlink" title="ZSet命令"></a>ZSet命令</h4><p>赋值语法：<br>ZADD key score1 member1 [score2 member2]<br>向有序集合添加一个或多个成员，或者更新已存在的成员的分数<br>取值语法：<br>ZCARD key<br>获取有序集合的成员数<br>ZCOUNT key min max<br>计算在有序集合中指定区间分数的成员数<br>ZRANK key member<br>返回有序集合中指定成员的索引<br>ZRANGE key start stop [WITHSCORES]<br>通过索引区间返回有序集合指定区间内的成员（低到高）<br>ZREVRANGE key start stop [WITHSCORES]<br>通过索引区间返回有序集合指定区间内的成员（高到低）<br>删除语法：<br>del key 移除集合<br>ZREM key member1 [member2…]<br>移除有序集合中的一个或多个成员<br>ZREMRANGEBYRANK key start stop<br>移除有序集合中给定的排名区间的所有成员（第一名是0）<br>ZREMRANGEBYSCORE key min max<br>移除有序集合中给定的分数区间的成员</p>
+<h4 id="应用场景-4"><a href="#应用场景-4" class="headerlink" title="应用场景"></a>应用场景</h4><p>常用于：排行榜<br>也可以用ZSet来做带权重的队列，比如，普通消息的score为1，重要消息的score为2，然后工作线程可以选择按score的倒序来获取工作任务。让重要的任务优先执行。</p>
+
           
         
       
