@@ -197,3 +197,111 @@ BRPOPLPUSH source destination timeout
 在处理Web客户端发送的命令请求时，某些操作的执行时间可能会比我们预期的更长一些，通过将待执行任务的相关信息放入队列里面，并在之后对队列进行处理，用户可以推迟执行那些需要一段时间才能完成的操作，这种将工作交给任务处理器来执行的做法被称为任务队列
 RPOPLPUSH source destination
 常用案例：订单系统的下单流程，用户系统登陆注册短信等
+``` java
+@Resource(name = "redisTemplate")
+ListOperations<String, String> list;
+
+// 1 付款完成，初始化任务队列
+public void listQueueInit(String orderId) {
+    // 初始化的key
+    String key = "prod:" + orderId;
+    list.leftPushAll(key, "1商家发货", "2小哥发件", "3北京海淀某小区-》》首都机场", "4首都机场-》》南京机场", "5机场-》》建业区", "6买家签收")；
+}
+
+// 2 触发事件
+public void listQueueTouch(String orderId) {
+    // 已完成的队列的key
+    String key = "prod:" + orderId + ":succ";
+    list.rightPopAndLeftPush("prod:" + orderId, key);
+}
+
+// 3 查询: 客户查询
+public List<String> listQueueSucc(String orderId) {
+    // 已完成的队列的key
+    String key = "prod:" + orderId + ":succ";
+    return list.range(key, 0, -1);
+}
+
+// 4 物流查询 当前快递还有多少任务没有执行
+public List<String> listQueueWait(String orderId) {
+    // 初始化的key
+    String key = "prod:" + orderId;
+    return list.range(key, 0, -1);
+}
+```
+### Set
+Set是String类型的无序集合。集合成员是唯一的，这就意味着集合中不能出现重复的数据。类似与Java中的HashTable
+Redis中的集合是通过哈希实现的，所以添加，删除，查找的复杂度都是O(1)
+集合中最大的成员数是2^32-1(4294967295, 每个集合可存储40多亿个成员)。
+
+Redis的集合对象set的底层存储结构使用了intset和hashtable两种数据结构存储的，intset可以理解为数组，hashtable就是普通的哈希表
+intset内部其实是一个数组(int8_t coentents[]数组)，而且存储结构的时候是有序的，因为在查找数据的时候是通过二分查找来实现的
+#### Set命令
+赋值语法:
+SADD key member1 [member2]
+向集合添加一个或多个成员
+取值语法：
+SCARD key
+获取集合的成员数
+SMEMBERS key
+返回集合中的所有成员
+SISMEMBER key member
+判断member元素是否是集合key的成员
+SRANDMEMBER key[count] 
+返回集合中一个或多个随机数
+删除语法：
+SREM key member1 [member2]
+移除集合中一个或多个成员
+SPOP key[count]
+移除并返回集合中的一个随机元素
+SMOVE source destination member
+将member元素从source集合移动到destination集合
+差集语法：
+SDIFF key1 [key2]
+返回给定所有集合的差集，按照key1为标准
+SDIFFSTORE destination key1 [key2]
+返回给定所有集合的差集并存储在destination中
+交集语法：
+SINTER key1 [key2]
+返回给定所有集合的差集（共有数据）
+SINTERSTORE destination key1 [key2]
+返回给定所有集合的交集并存储在destination中
+并集语法：
+SUNION key1 [key2]
+返回给定所有集合的并集
+SUNIONSTORE destination key1 [key2]
+返回给定所有集合的并集并存储在destination中
+#### 应用场景
+常应用于：对两个集合间的数据进行交集，并集，差集的计算
+1.以非常方便的实现如共同关注，共同喜好，二度好友等功能。以及选择是否存储到新的集合返回给客户端
+2.利用唯一性，可以统计访问网站的所有独立的IP
+### ZSet
+1.Redis有序集合和集合一样也是string类型元素的集合，且不允许重复的成员。
+2.不同的是每个元素都会关联一个double类型的分数。Redis正是通过分数来为集合中的成员进行从小达大的排序。
+3.有序集合的成员是唯一的，但分数(score)却可以重复。
+#### ZSet命令
+赋值语法：
+ZADD key score1 member1 [score2 member2]
+向有序集合添加一个或多个成员，或者更新已存在的成员的分数
+取值语法：
+ZCARD key
+获取有序集合的成员数
+ZCOUNT key min max
+计算在有序集合中指定区间分数的成员数
+ZRANK key member
+返回有序集合中指定成员的索引
+ZRANGE key start stop [WITHSCORES]
+通过索引区间返回有序集合指定区间内的成员（低到高）
+ZREVRANGE key start stop [WITHSCORES]
+通过索引区间返回有序集合指定区间内的成员（高到低）
+删除语法：
+del key 移除集合
+ZREM key member1 [member2...]
+移除有序集合中的一个或多个成员
+ZREMRANGEBYRANK key start stop
+移除有序集合中给定的排名区间的所有成员（第一名是0）
+ZREMRANGEBYSCORE key min max
+移除有序集合中给定的分数区间的成员
+#### 应用场景
+常用于：排行榜
+也可以用ZSet来做带权重的队列，比如，普通消息的score为1，重要消息的score为2，然后工作线程可以选择按score的倒序来获取工作任务。让重要的任务优先执行。
