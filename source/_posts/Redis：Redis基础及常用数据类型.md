@@ -305,3 +305,16 @@ ZREMRANGEBYSCORE key min max
 #### 应用场景
 常用于：排行榜
 也可以用ZSet来做带权重的队列，比如，普通消息的score为1，重要消息的score为2，然后工作线程可以选择按score的倒序来获取工作任务。让重要的任务优先执行。
+## Redis多数据库
+Redis下数据库由整数索引标示，默认情况下，客户端连接到数据库0
+  
+    database 16 配置文件中控制数据库总数
+select 数据库  select 15
+数据库切换
+move key 数据库
+移动key到某个库
+数据库清空：
+flushdb  清除当前数据库的所有key
+flushall  清除整个Redis的数据库所有key
+ps: 上线前对Redis进行缓存预热
+
