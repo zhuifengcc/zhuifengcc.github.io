@@ -99,6 +99,8 @@ DECRBY KEY_NAME 减值
 将key中存储的数字减去指定的减值
 APPEND KEY_NAME VALUE
 用于为指定的key追加至末尾，为其赋值
+
+    Tips: 数字类型自增/减的时候是有范围的，范围在long的最大值和最小值之间，超出这个范围，Redis会报错
 #### 应用场景
 1.String通常用于保存单个字符串或json字符串数据
 2.因String是二进制安全的，可存储图片信息
@@ -142,7 +144,7 @@ HEXISTS key field
 2.为什么不用String存储对象？（序列化与反序列化，修改值的问题，并发问题）
 Hash是最接近关系数据库结构的数据类型，可以将数据库一条记录或程序中的一个对象转换为hashmap存储在Redis中，并提供了直接存取这个Map成员的接口
 ### List
-Redis 列表是简单的字符串列表，按照插入顺序排序，可以添加一个元素列表的头部或者尾部，一个列表最多可以包含2^32-1个元素。类似java中的LinkedList
+Redis 列表是简单的字符串列表，按照插入顺序排序，可以添加一个元素列表的头部或者尾部，一个列表最多可以包含2^32-1个元素。类似java中的LinkedList(zipList(使用一块连续的内存存储), 当数据量比较多的时候将多个zipList使用双向指针串起来形成quickList)
 #### List命令
 赋值语法：
 LPUSH key value1 [value2]
